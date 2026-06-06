@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#1a1510">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pila Vergogna">
+<title>La Pila della Vergogna</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+
+:root{--p:#f4f0e8;--p2:#ede8dc;--p3:#e4ddd0;--ink:#1a1510;--ink2:#3d3528;--ink3:#6b5e4a;--red:#b5220f;--red2:#8a180a;--red3:#f5ddd8;--gold:#c4a84a;--sage:#5a7a5a;--sage2:#c8d8c0;--b:#c8bfaa;--b2:#a8997e;--sh:rgba(26,21,16,.08)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink);font-size:16px;line-height:1.6;padding-bottom:80px;min-height:100vh}
+/* SCREENS */
+.screen{display:none}.screen.on{display:block}
+/* AUTH */
+#auth-screen{min-height:100vh;display:none;flex-direction:column}
+#auth-screen.on{display:flex}
+.auth-top{background:var(--ink);padding:48px 28px 36px;flex-shrink:0;position:relative;overflow:hidden}
+.auth-top::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;border:50px solid rgba(181,34,15,.15)}
+.auth-logo{font-family:'DM Serif Display',serif;font-size:clamp(32px,8vw,52px);font-style:italic;color:var(--p);line-height:1;margin-bottom:10px;position:relative;z-index:1}
+.auth-logo em{color:var(--red);font-style:normal}
+.auth-tag{font-size:13px;font-style:italic;color:rgba(244,240,232,.5);position:relative;z-index:1}
+.auth-body{flex:1;padding:28px;background:var(--p)}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--b)}
+.atab{font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;padding:0 0 10px;margin-right:24px;cursor:pointer;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.atab.on{color:var(--ink);border-bottom-color:var(--red)}
+.aform{display:none;flex-direction:column;gap:13px}.aform.on{display:flex}
+.fl{display:block;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.fi{width:100%;background:var(--p2);border:1.5px solid var(--b);border-radius:7px;padding:11px 13px;font-family:'Crimson Pro',serif;font-size:16px;color:var(--ink);outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--ink);background:var(--p)}
+.fi::placeholder{color:var(--ink3);opacity:.5}
+.abtn{background:var(--red);color:#fff;border:none;border-radius:7px;padding:13px;font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(181,34,15,.3);width:100%}
+.abtn:hover{background:var(--red2)}
+.aerr{background:var(--red3);border:1px solid rgba(181,34,15,.3);border-radius:6px;padding:10px 13px;font-size:13px;font-style:italic;color:var(--red);display:none}
+.aerr.on{display:block}
+.alink{font-size:13px;font-style:italic;color:var(--red);cursor:pointer;text-decoration:underline;text-align:center}
+/* TOPBAR */
+.topbar{background:var(--ink);padding:0 16px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--red)}
+.logo{font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:var(--p);cursor:pointer;white-space:nowrap}
+.logo em{color:var(--red);font-style:normal}
+.tb-right{display:flex;align-items:center;gap:8px}
+.tb-av{width:30px;height:30px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:13px;font-style:italic;color:#fff;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0}
+.tb-user{font-size:12px;font-style:italic;color:rgba(255,255,255,.5);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-btn{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:11px;padding:3px 9px;border-radius:4px;cursor:pointer;font-family:'Crimson Pro',serif;transition:all .2s}
+.tb-btn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--ink);border-top:2px solid var(--red);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 2px;cursor:pointer;transition:opacity .2s;border:none;background:transparent}
+.bn-i{font-size:19px;line-height:1}
+.bn-l{font-size:9px;font-style:italic;color:rgba(255,255,255,.4);margin-top:2px;font-family:'Crimson Pro',serif}
+.bn.on .bn-l{color:#fff}
+.bn.on .bn-i{transform:translateY(-2px)}
+/* LAYOUT */
+.wrap{max-width:680px;margin:0 auto;padding:18px 14px}
+.page{display:none}.page.on{display:block;animation:fu .3s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* TYPOGRAPHY */
+.ptitle{font-family:'DM Serif Display',serif;font-size:24px;font-style:italic;color:var(--ink);margin-bottom:3px}
+.psub{font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:16px}
+.sh{font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:9px;padding-bottom:6px;border-bottom:1.5px solid var(--b);display:flex;align-items:baseline;justify-content:space-between}
+.sh-s{font-family:'Crimson Pro',serif;font-size:12px;color:var(--ink3);font-weight:300}
+.tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);opacity:.8;margin-bottom:5px;display:block}
+/* CARDS */
+.card{background:var(--p);border:1.5px solid var(--b);border-radius:10px;padding:16px;box-shadow:0 1px 8px var(--sh);margin-bottom:13px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+@media(max-width:480px){.g2{grid-template-columns:1fr}}
+/* BUTTONS */
+.btn{border:none;border-radius:6px;padding:8px 15px;font-family:'Crimson Pro',serif;font-size:14px;font-style:italic;cursor:pointer;transition:all .2s;display:inline-block}
+.br{background:var(--red);color:#fff;box-shadow:0 2px 8px rgba(181,34,15,.25)}.br:hover{background:var(--red2)}
+.bg{background:transparent;border:1.5px solid var(--b);color:var(--ink2)}.bg:hover{border-color:var(--red);color:var(--red)}
+.bs{background:var(--sage);color:#fff}.bs:hover{background:#3a5a3a}
+.bsm{padding:5px 11px;font-size:12px}
+.mb{margin-bottom:13px}
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+@media(max-width:420px){.srow{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--p);border:1.5px solid var(--b);border-radius:9px;padding:11px 9px;position:relative;overflow:hidden;transition:transform .2s}
+.sc:hover{transform:translateY(-1px)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sr::before{background:var(--red)}.sg::before{background:var(--sage)}.sk::before{background:var(--ink2)}.so::before{background:var(--gold)}
+.sn{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ink);line-height:1;margin-bottom:2px}
+.sl{font-size:10px;font-style:italic;color:var(--ink3)}
+.ss{font-size:9px;color:var(--red);font-style:italic;margin-top:2px}
+/* XP */
+.xpp{background:var(--ink);border-radius:10px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.xplv{width:42px;height:42px;border-radius:50%;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:3px solid rgba(255,255,255,.2)}
+.xpn{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;line-height:1}
+.xpt{font-size:7px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.xpi{flex:1;min-width:130px}
+.xpname{font-family:'DM Serif Display',serif;font-size:13px;font-style:italic;color:var(--p);margin-bottom:2px}
+.xpsub{font-size:10px;font-style:italic;color:rgba(255,255,255,.4);margin-bottom:6px}
+.xpbar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.xpfill{height:100%;border-radius:3px;background:linear-gradient(to right,var(--red),var(--gold));transition:width .5s ease}
+.badges{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0}
+.bdg{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:all .2s}
+.bdg:hover{transform:scale(1.1)}
+.bdg.lk{opacity:.2;filter:grayscale(1)}
+/* SHELF */
+.shelf{background:var(--p);border:1.5px solid var(--b);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.shelf-h{padding:11px 15px 0;display:flex;align-items:baseline;justify-content:space-between}
+.shelf-t{font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;color:var(--ink)}
+.shelf-m{font-size:11px;font-style:italic;color:var(--ink3)}
+.shelf-r{padding:9px 15px 0;display:flex;align-items:flex-end;gap:3px;overflow-x:auto;scrollbar-width:none;min-height:110px}
+.shelf-r::-webkit-scrollbar{display:none}
+.shelf-pl{height:9px;margin:0 15px 13px;background:linear-gradient(to bottom,var(--b2),var(--p3),#9a8060);border-radius:2px;box-shadow:0 3px 6px rgba(100,70,30,.18)}
+.bk{flex-shrink:0;border-radius:3px 1px 1px 3px;cursor:pointer;transform-origin:bottom center;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:2px 0 5px rgba(0,0,0,.14)}
+.bk:hover{transform:translateY(-12px);z-index:5}
+.bk.rd{animation:rp 3s ease-in-out infinite}
+@keyframes rp{0%,100%{box-shadow:2px 0 5px rgba(0,0,0,.14)}50%{box-shadow:2px 0 5px rgba(0,0,0,.14),0 0 12px rgba(90,122,90,.5)}}
+.bk.dn{opacity:.3;filter:saturate(.2)}
+.bk .st{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'DM Serif Display',serif;font-size:9px;letter-spacing:.7px;text-align:center;padding:6px 3px;height:100%;display:flex;align-items:center;justify-content:center;line-height:1.1;overflow:hidden}
+.be{width:9px;background:linear-gradient(to right,#b0a898,#d0c8b8);border-radius:2px;flex-shrink:0;position:relative}
+.be::after{content:'';position:absolute;bottom:0;left:-2px;right:-2px;height:5px;background:#c0b8a8;border-radius:2px}
+.cv{width:9px;background:linear-gradient(to bottom,#f5eec0,#e8d890);border-radius:2px 2px 1px 1px;flex-shrink:0;align-self:flex-end;margin-bottom:2px;position:relative}
+.cv::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:3px;height:7px;background:radial-gradient(ellipse at bottom,#ffd700,#ff6600);border-radius:50% 50% 20% 20%;animation:fl 1.8s ease-in-out infinite alternate;box-shadow:0 0 7px 3px rgba(255,160,0,.35)}
+@keyframes fl{0%{transform:translateX(-50%) scaleX(1)}100%{transform:translateX(-55%) scaleX(.7) scaleY(1.2)}}
+/* SPINE COLORS */
+.b1{background:linear-gradient(to right,#9e2a1a,#c03820);color:#fde8e4}
+.b2{background:linear-gradient(to right,#1e3d6e,#2a5290);color:#d8e8ff}
+.b3{background:linear-gradient(to right,#1e5030,#286840);color:#c8eecc}
+.b4{background:linear-gradient(to right,#5a2878,#7a3898);color:#f0d8ff}
+.b5{background:linear-gradient(to right,#7a5218,#9e6e22);color:#faeacc}
+.b6{background:linear-gradient(to right,#5a1e38,#7a2a50);color:#ffd8e8}
+.b7{background:linear-gradient(to right,#1e5858,#287878);color:#c8f0f0}
+.b8{background:linear-gradient(to right,#3a3018,#504020);color:#e8e0c0}
+.bm1{background:linear-gradient(to right,#cc3030,#e84848);color:#fff}
+.bm2{background:linear-gradient(to right,#2258aa,#3478cc);color:#fff}
+.bm3{background:linear-gradient(to right,#228844,#34aa58);color:#fff}
+.bf1{background:linear-gradient(to right,#8844aa,#aa66cc);color:#fff}
+/* BOOK GRID */
+.bfilt{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px;align-items:center}
+.fsel{background:var(--p2);border:1.5px solid var(--b);color:var(--ink2);font-family:'Crimson Pro',serif;font-size:13px;font-style:italic;padding:5px 9px;border-radius:5px;outline:none;cursor:pointer}
+.bggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:16px}
+.bc{background:var(--p);border:1.5px solid var(--b);border-radius:9px;overflow:hidden;cursor:pointer;transition:all .2s}
+.bc:hover{transform:translateY(-2px);box-shadow:0 6px 18px var(--sh)}
+.bc-sp{height:80px;display:flex;align-items:center;justify-content:center;position:relative}
+.bc-t{font-family:'DM Serif Display',serif;font-size:10px;text-align:center;padding:5px;line-height:1.3}
+.bc-b{padding:8px 9px}
+.bc-ti{font-family:'DM Serif Display',serif;font-size:12px;color:var(--ink);margin-bottom:1px;line-height:1.3}
+.bc-au{font-size:10px;font-style:italic;color:var(--ink3)}
+.bc-st{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-top:4px}
+.su{background:var(--red3);color:var(--red)}.srd{background:var(--sage2);color:var(--sage)}.sdn{background:var(--p2);color:var(--ink3)}.sab{background:#f0f0d8;color:#7a7a30}
+/* INSERT */
+.itabs{display:flex;gap:3px;margin-bottom:13px;background:var(--p2);padding:3px;border-radius:7px;border:1.5px solid var(--b)}
+.itab{flex:1;text-align:center;padding:7px 4px;border-radius:5px;cursor:pointer;font-size:11px;font-style:italic;color:var(--ink3);transition:all .2s}
+.itab.on{background:var(--p);color:var(--ink);box-shadow:0 1px 5px var(--sh)}
+.ipan{display:none}.ipan.on{display:block}
+.fg{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+.sres{background:var(--p2);border:1.5px solid var(--b);border-radius:8px;margin-top:7px;overflow:hidden;display:none}
+.sres.on{display:block}
+.sri{padding:9px 12px;border-bottom:1px solid var(--b);cursor:pointer;display:flex;align-items:center;gap:9px;transition:background .2s}
+.sri:last-child{border-bottom:none}
+.sri:hover{background:var(--p3)}
+.dz{border:2px dashed var(--b);border-radius:9px;padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--p2)}
+.dz:hover,.dz.dg{border-color:var(--red);background:var(--red3)}
+.pbr{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b)}
+.pbr:last-child{border-bottom:none}
+/* RUOTA */
+.warea{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:13px}
+.wwrap{position:relative;width:120px;height:120px;flex-shrink:0}
+.wptr{position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:11px solid var(--red);z-index:5}
+.wheel{width:120px;height:120px;border-radius:50%;border:3px solid var(--b2);background:conic-gradient(#9e2a1a 0deg 45deg,#1e3d6e 45deg 90deg,#1e5030 90deg 135deg,#5a2878 135deg 180deg,#7a5218 180deg 225deg,#5a1e38 225deg 270deg,#1e5858 270deg 315deg,#6e3018 315deg 360deg);transition:transform 3s cubic-bezier(.17,.67,.12,.99);position:relative}
+.wheel::after{content:'';position:absolute;inset:35%;border-radius:50%;background:var(--p);border:2px solid var(--b2)}
+.rbox{background:var(--p2);border:1.5px solid var(--b);border-radius:8px;padding:12px;flex:1;min-width:150px}
+.rt{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);opacity:.75;margin-bottom:5px}
+.rti{font-family:'DM Serif Display',serif;font-size:16px;color:var(--ink);margin-bottom:2px}
+.rau{font-size:11px;font-style:italic;color:var(--ink3);margin-bottom:7px}
+.rrs{list-style:none;margin-bottom:9px}
+.rrs li{font-size:11px;font-style:italic;color:var(--ink2);padding:2px 0 2px 11px;position:relative}
+.rrs li::before{content:'◆';position:absolute;left:0;color:var(--red);font-size:6px;top:5px}
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(26,21,16,.55);z-index:200;backdrop-filter:blur(3px);overflow-y:auto;padding:22px 12px}
+.ov.on{display:flex;align-items:flex-start;justify-content:center}
+.mod{background:var(--p);border-radius:11px;max-width:500px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.3);animation:fu .3s ease both;overflow:hidden}
+.mh{background:var(--ink);padding:15px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.mc{background:transparent;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;line-height:1}
+.mc:hover{color:#fff}
+.mb{padding:16px 18px}
+.mf{padding:0 18px 15px;display:flex;gap:8px;flex-wrap:wrap}
+.prow{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.plbl{font-size:12px;font-style:italic;color:var(--ink2);min-width:90px}
+.pi{width:62px;background:var(--p2);border:1.5px solid var(--b);border-radius:5px;padding:5px 7px;font-size:14px;text-align:center;font-family:'Crimson Pro',serif;color:var(--ink)}
+.pbw{flex:1;min-width:80px;height:6px;background:var(--p2);border-radius:3px;overflow:hidden;border:1px solid var(--b)}
+.pbf{height:100%;background:linear-gradient(to right,var(--sage),#3a7a3a);border-radius:3px;transition:width .5s}
+/* MISSIONS */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px;margin-bottom:14px}
+.mc2{background:var(--p);border:1.5px solid var(--b);border-radius:9px;padding:12px;transition:all .2s;position:relative}
+.mc2.dn2{opacity:.5}
+.mc2.dn2::after{content:'✓';position:absolute;top:9px;right:11px;color:var(--sage);font-size:15px;font-weight:700}
+.mty{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);opacity:.7;margin-bottom:5px}
+.mti{font-family:'DM Serif Display',serif;font-size:12px;color:var(--ink);margin-bottom:4px;line-height:1.3}
+.mxp{font-size:11px;font-style:italic;color:var(--red)}
+.mbar{margin-top:7px;height:3px;background:var(--p3);border-radius:2px;overflow:hidden}
+.mfil{height:100%;border-radius:2px;background:linear-gradient(to right,var(--red),var(--gold));transition:width .4s}
+.mbtn{margin-top:7px;width:100%;background:var(--ink);color:var(--p);border:none;border-radius:5px;padding:5px;font-family:'Crimson Pro',serif;font-size:11px;font-style:italic;cursor:pointer}
+/* COACH */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{background:var(--p2);border:1.5px solid var(--b);color:var(--ink2);font-size:12px;font-style:italic;padding:5px 11px;border-radius:18px;cursor:pointer;transition:all .2s;font-family:'Crimson Pro',serif}
+.chip:hover{border-color:var(--sage);color:var(--sage);background:var(--sage2)}
+.cinput{flex:1;background:var(--p2);border:1.5px solid var(--b);border-radius:6px;padding:9px 12px;font-family:'Crimson Pro',serif;font-size:15px;font-style:italic;color:var(--ink);outline:none}
+.cinput:focus{border-color:var(--ink);background:var(--p)}
+.cinput::placeholder{color:var(--ink3);opacity:.5}
+.cresp{margin-top:10px;background:var(--p2);border-left:3px solid var(--sage);padding:10px 13px;border-radius:0 7px 7px 0;display:none}
+.cresp.on{display:block;animation:fu .4s ease both}
+.cpill{display:inline-block;background:var(--sage);color:#fff;font-family:'DM Serif Display',serif;font-size:11px;font-style:italic;padding:3px 9px;border-radius:4px;margin:4px 3px 0 0;cursor:pointer}
+/* AMICI */
+.fc{background:var(--p);border:1.5px solid var(--b);border-radius:9px;padding:13px 14px;display:flex;align-items:flex-start;gap:11px;margin-bottom:9px;transition:box-shadow .2s}
+.fc:hover{box-shadow:0 4px 16px var(--sh)}
+.fca{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;color:#fff;flex-shrink:0;border:3px solid var(--p)}
+.fci{flex:1}
+.fcn{font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;color:var(--ink);margin-bottom:1px}
+.fch{font-size:11px;font-style:italic;color:var(--ink3);margin-bottom:5px}
+.fcs{display:flex;gap:10px;flex-wrap:wrap}
+.fcst{font-size:11px;font-style:italic;color:var(--ink2)}
+.fca2{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.msp{display:flex;gap:3px;align-items:flex-end;flex-wrap:wrap;margin-top:6px}
+.ms{width:10px;border-radius:2px 1px 1px 2px;cursor:pointer;transition:transform .2s;position:relative}
+.ms:hover{transform:translateY(-5px)}
+.ms .tt{display:none;position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--p);font-size:10px;font-style:italic;padding:3px 6px;border-radius:3px;white-space:nowrap;z-index:10;font-family:'Crimson Pro',serif}
+.ms:hover .tt{display:block}
+/* RT CARD */
+.rtc{background:linear-gradient(135deg,#f3f8f0,#eaf4e5);border:1.5px solid rgba(90,122,90,.25);border-radius:9px;padding:13px 14px;margin-bottom:9px}
+.rtb{font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;color:var(--ink)}
+.rta2{font-size:11px;font-style:italic;color:var(--ink3)}
+.rtbdg{background:var(--sage);color:#fff;font-size:9px;padding:3px 8px;border-radius:3px}
+.rtpa{display:flex;align-items:center;gap:5px;margin:6px 0}
+.rtav{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:9px;font-style:italic;color:#fff;border:2px solid var(--p);margin-left:-4px}
+.rtav:first-child{margin-left:0}
+.rtpb{height:4px;background:rgba(90,122,90,.15);border-radius:2px;overflow:hidden;margin:5px 0}
+.rtpf{height:100%;background:linear-gradient(to right,var(--sage),#3a7a3a);border-radius:2px}
+/* COMMENTI */
+.disc{background:var(--p);border:1.5px solid var(--b);border-radius:9px;overflow:hidden}
+.cl{padding:0 14px;max-height:270px;overflow-y:auto}
+.cm{padding:10px 0;border-bottom:1px solid var(--b);display:flex;gap:8px;align-items:flex-start}
+.cm:last-child{border-bottom:none}
+.cav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:11px;font-style:italic;color:#fff;flex-shrink:0}
+.cb{flex:1}
+.che{display:flex;align-items:baseline;gap:5px;margin-bottom:3px;flex-wrap:wrap}
+.can{font-family:'DM Serif Display',serif;font-size:12px;color:var(--ink)}
+.cpg{font-size:10px;font-style:italic;color:var(--red)}
+.ctm{font-size:9px;font-style:italic;color:var(--ink3);margin-left:auto}
+.ctx{font-size:13px;font-style:italic;color:var(--ink2);line-height:1.5}
+.sp2{display:inline;background:var(--ink);color:var(--ink);border-radius:2px;padding:0 3px;cursor:pointer;font-size:12px}
+.sp2:hover{color:var(--p)}
+.lbtn{background:transparent;border:1px solid var(--b);color:var(--ink3);font-family:'Crimson Pro',serif;font-size:10px;font-style:italic;padding:2px 8px;border-radius:3px;cursor:pointer;margin-top:4px}
+.lbtn:hover,.lbtn.lk{border-color:var(--red);color:var(--red)}
+.ac{padding:10px 14px;border-top:1.5px solid var(--b);display:flex;gap:7px;align-items:flex-start}
+.aci{flex:1;background:var(--p2);border:1.5px solid var(--b);border-radius:5px;padding:7px 10px;font-family:'Crimson Pro',serif;font-size:13px;font-style:italic;color:var(--ink);outline:none;resize:none}
+.aci:focus{border-color:var(--ink)}
+.apg{width:65px;background:var(--p2);border:1.5px solid var(--b);border-radius:5px;padding:7px 8px;font-family:'Crimson Pro',serif;font-size:12px;color:var(--ink);outline:none}
+/* SHAME */
+.shbox{background:linear-gradient(135deg,#fdf0ec,#f9e4de);border:1.5px solid rgba(181,34,15,.2);border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.prow2{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.plb{font-size:11px;font-style:italic;color:var(--ink2);width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptr{flex:1;height:4px;background:var(--p3);border-radius:3px;overflow:hidden}
+.pfl{height:100%;border-radius:3px}
+.ppc{font-size:10px;color:var(--ink3);width:42px;text-align:right;flex-shrink:0}
+/* PROFILO */
+.ph{display:flex;align-items:center;gap:14px;padding:16px;background:var(--ink);border-radius:9px;margin-bottom:14px;color:var(--p)}
+.pava{width:52px;height:52px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:24px;font-style:italic;color:#fff;border:4px solid rgba(255,255,255,.2);flex-shrink:0}
+/* FEED */
+.upd{display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--b)}
+.upd:last-child{border-bottom:none}
+.upi{font-size:16px;flex-shrink:0;width:24px;text-align:center;margin-top:1px}
+.upt{font-size:13px;font-style:italic;color:var(--ink2);line-height:1.5}
+.upt strong{color:var(--ink);font-style:normal;font-family:'DM Serif Display',serif}
+.utm{font-size:10px;color:var(--ink3);margin-top:2px}
+/* XP PENALTY BADGE */
+.xp-neg{color:var(--red);font-weight:bold}
+.xp-pos{color:var(--sage);font-weight:bold}
+/* TOAST */
+#toast{position:fixed;bottom:85px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.tm{background:var(--ink);color:var(--p);font-family:'Crimson Pro',serif;font-size:13px;font-style:italic;padding:9px 14px;border-radius:6px;box-shadow:0 4px 18px rgba(0,0,0,.3);animation:fu .3s ease;border-left:3px solid var(--red)}
+.tm.ok{border-left-color:#5a9a5a}
+.tm.wn{border-left-color:var(--gold)}
+/* LOADING */
+.loader{display:flex;align-items:center;justify-content:center;min-height:200px;font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--ink3)}
+.spinner{width:32px;height:32px;border:3px solid var(--b);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite;margin-right:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="loading-screen" style="position:fixed;inset:0;background:#f4f0e8;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:Georgia,serif">
+<div style="font-size:48px;margin-bottom:16px">📚</div>
+<div style="font-size:24px;font-style:italic;color:#1a1510;margin-bottom:8px">La Pila della Vergogna</div>
+<div style="font-size:14px;font-style:italic;color:#6b5e4a;margin-bottom:28px">Caricamento…</div>
+<div style="width:36px;height:36px;border:3px solid #c8bfaa;border-top-color:#b5220f;border-radius:50%;animation:ldspin 1s linear infinite"></div>
+<style>@keyframes ldspin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen" class="screen">
+  <div class="auth-top">
+    <div class="auth-logo">La Pila della<br><em>Vergogna</em></div>
+    <div class="auth-tag">✦ smetti di comprare. inizia a leggere. ✦</div>
+  </div>
+  <div class="auth-body">
+    <div class="auth-tabs">
+      <div class="atab on" onclick="authTab('login',this)">Accedi</div>
+      <div class="atab" onclick="authTab('register',this)">Registrati</div>
+      <div class="atab" onclick="authTab('reset',this)">Password?</div>
+    </div>
+    <form class="aform on" id="af-login" onsubmit="doLogin(event)">
+      <div class="aerr" id="login-err"></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="l-email" type="email" placeholder="la.tua@email.it" required></div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" id="l-pass" type="password" placeholder="••••••••" required></div>
+      <button class="abtn" type="submit" id="l-btn">Entra nella Pila →</button>
+    </form>
+    <form class="aform" id="af-register" onsubmit="doRegister(event)">
+      <div class="aerr" id="reg-err"></div>
+      <div class="fg"><label class="fl">Come ti chiami?</label><input class="fi" id="r-name" placeholder="es. Giulia" required></div>
+      <div class="fg"><label class="fl">Username (visibile alle amiche)</label><input class="fi" id="r-user" placeholder="@giulia_legge" required></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="r-email" type="email" placeholder="la.tua@email.it" required></div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" id="r-pass" type="password" placeholder="min. 8 caratteri" required></div>
+      <button class="abtn" type="submit" id="r-btn">Crea la mia Pila →</button>
+    </form>
+    <form class="aform" id="af-reset" onsubmit="doReset(event)">
+      <div style="font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:6px">Recupera password</div>
+      <div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:13px;line-height:1.6">Ti mandiamo un link per reimpostare la password.</div>
+      <div class="aerr" id="reset-err"></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="rs-email" type="email" placeholder="la.tua@email.it" required></div>
+      <button class="abtn" type="submit">Invia link →</button>
+      <span class="alink" onclick="authTab('login',document.querySelector('.atab'))">← Torna al login</span>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="screen">
+  <div class="topbar">
+    <div class="logo" onclick="go('scaffale')">La Pila della <em>Vergogna</em></div>
+    <div class="tb-right">
+      <div class="tb-av" id="tb-av">?</div>
+      <div class="tb-user" id="tb-user"></div>
+      <button class="tb-btn" onclick="doLogout()">Esci</button>
+    </div>
+  </div>
+  <div class="wrap">
+
+    <!-- SCAFFALE -->
+    <div class="page on" id="pg-scaffale">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:7px;margin-bottom:3px">
+        <div class="ptitle">Il mio scaffale</div>
+        <button class="btn br bsm" onclick="go('inserisci')">➕ Aggiungi</button>
+      </div>
+      <div class="psub" id="scaffale-sub">Cosa stai ignorando oggi?</div>
+      <div class="srow">
+        <div class="sc sr"><div class="sn" id="s-tot">—</div><div class="sl">possedute</div></div>
+        <div class="sc sk"><div class="sn" id="s-unr">—</div><div class="sl">non lette</div><div class="ss" id="s-pct"></div></div>
+        <div class="sc sg"><div class="sn" id="s-dn">—</div><div class="sl">completate</div></div>
+        <div class="sc so"><div class="sn" id="s-rd">—</div><div class="sl">in lettura</div></div>
+      </div>
+      <div class="xpp">
+        <div class="xplv"><div class="xpn" id="xp-n">1</div><div class="xpt">Lv</div></div>
+        <div class="xpi">
+          <div class="xpname" id="xp-name">Accumulatore</div>
+          <div class="xpsub" id="xp-sub">0 XP</div>
+          <div class="xpbar"><div class="xpfill" id="xp-fill" style="width:0%"></div></div>
+        </div>
+        <div class="badges">
+          <div class="bdg lk" id="b1" title="Primo Sangue">🩸</div>
+          <div class="bdg lk" id="b2" title="Pulizia Profonda">🧹</div>
+          <div class="bdg lk" id="b3" title="Saga Slayer">⚔️</div>
+          <div class="bdg lk" id="b4" title="Centurione">🏛️</div>
+        </div>
+      </div>
+      <div class="shelf" id="shelf-wrap">
+        <div class="shelf-h"><div class="shelf-t">📚 La tua pila</div><div class="shelf-m" id="shelf-m">…</div></div>
+        <div class="shelf-r" id="shelf-r"><div class="be" style="height:50px"></div><div class="loader" style="min-height:80px"><div class="spinner"></div>Caricamento…</div></div>
+        <div class="shelf-pl"></div>
+      </div>
+      <div class="g2 mb">
+        <div class="card">
+          <span class="tag">🎡 Ruota della Vergogna™</span>
+          <div style="font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px">Lascia decidere al destino</div>
+          <div class="warea">
+            <div class="wwrap"><div class="wptr"></div><div class="wheel" id="wheel"></div></div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <select class="fsel" id="wt"><option value="all">Tutti</option><option value="libro">Libri</option><option value="manga">Manga</option><option value="fumetto">Fumetti</option></select>
+              <select class="fsel" id="wl"><option value="all">Qualsiasi</option><option value="short">Breve</option><option value="mid">Media</option><option value="long">Lunga</option></select>
+              <button class="btn br bsm" onclick="openRuotaPopup()">🎲 Scegli</button>
+            </div>
+          </div>
+          <div class="rbox" id="rbox"><div class="rt">Aggiungi libri per usare la ruota</div></div>
+        </div>
+        <div class="card">
+          <span class="tag">🏆 Vergogna</span>
+          <div style="font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px">I tuoi crimini letterari</div>
+          <div id="shame"></div>
+        </div>
+      </div>
+      <div class="sh">La pila <span class="sh-s" id="cnt">—</span></div>
+      <div class="bfilt">
+        <select class="fsel" id="fs" onchange="renderList()"><option value="all">Tutti gli stati</option><option value="unread">Non letti</option><option value="reading">In lettura</option><option value="done">Completati</option></select>
+        <select class="fsel" id="ft" onchange="renderList()"><option value="all">Tutti i tipi</option><option value="libro">Libri</option><option value="manga">Manga</option><option value="fumetto">Fumetti</option></select>
+        <input class="fi" id="fq" style="max-width:130px;padding:5px 9px;font-size:13px" placeholder="Cerca titolo…" oninput="renderList()">
+        <input class="fi" id="fg2" style="max-width:110px;padding:5px 9px;font-size:13px" placeholder="Genere…" oninput="renderList()" onfocus="this.setAttribute('list','genre-datalist')" list="genre-datalist">
+        <datalist id="genre-datalist"></datalist>
+      </div>
+      <div class="bggrid" id="bgrid"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
+    </div>
+
+    <!-- INSERISCI -->
+    <div class="page" id="pg-inserisci">
+      <div class="ptitle">Inserisci opere</div>
+      <div class="psub">Aggiungi alla tua pila — attenzione, costa XP! 😈</div>
+      <div class="itabs">
+        <div class="itab on" onclick="itab('manuale',this)">✍️ Manuale</div>
+        <div class="itab" onclick="itab('ricerca',this)">🔍 Ricerca</div>
+        <div class="itab" onclick="itab('isbn',this)">📷 ISBN</div>
+        <div class="itab" onclick="itab('pdf',this)">📄 Lista</div>
+      </div>
+      <div class="ipan on card" id="ip-manuale">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <div class="fg" style="grid-column:1/-1"><label class="fl">Titolo *</label><input class="fi" id="m-t" placeholder="es. The Diviners"></div>
+          <div class="fg" style="grid-column:1/-1"><label class="fl">Autore</label><input class="fi" id="m-a" placeholder="es. Libba Bray"></div>
+          <div class="fg">
+  <label class="fl">Tipo</label>
+  <select class="fi" id="m-tp" onchange="if(this.value==='__custom__'){var v=prompt('Nome del tipo personalizzato:');if(v){var o=document.createElement('option');o.value=v.toLowerCase();o.text=v;this.insertBefore(o,this.lastChild);this.value=v.toLowerCase();}else{this.value='libro';}}">
+    <option value="libro">Libro</option>
+    <option value="manga">Manga</option>
+    <option value="fumetto">Fumetto</option>
+    <option value="graphic novel">Graphic Novel</option>
+    <option value="comic">Comic</option>
+    <option value="light novel">Light Novel</option>
+    <option value="webtoon">Webtoon</option>
+    <option value="artbook">Artbook</option>
+    <option value="__custom__">+ Aggiungi tipo…</option>
+  </select>
+</div>
+          <div class="fg"><label class="fl">Pagine</label><input class="fi" id="m-p" type="number" placeholder="320"></div>
+          <div class="fg"><label class="fl">Anno</label><input class="fi" id="m-an" type="number" placeholder="2022"></div>
+          <div class="fg" style="position:relative">
+  <label class="fl">Genere</label>
+  <input class="fi" id="m-g" placeholder="es. Fantasy" autocomplete="off"
+    oninput="showGenreSuggestions(this,document.getElementById('genre-suggestions'))"
+    onfocus="showGenreSuggestions(this,document.getElementById('genre-suggestions'))"
+    onblur="setTimeout(()=>document.getElementById('genre-suggestions').style.display='none',200)">
+  <div id="genre-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--p);border:1.5px solid var(--b);border-radius:0 0 7px 7px;z-index:50;box-shadow:0 4px 12px var(--sh);max-height:160px;overflow-y:auto"></div>
+</div>
+          <div class="fg" style="grid-column:1/-1"><label class="fl">Serie (opzionale)</label><input class="fi" id="m-s" placeholder="es. Ariadne, vol. 3"></div>
+        </div>
+        <button class="btn br" onclick="addManuale()" style="margin-top:6px">➕ Aggiungi alla pila</button>
+      </div>
+      <div class="ipan card" id="ip-ricerca">
+        <div class="fg"><label class="fl">Cerca titolo o autore</label>
+          <div style="display:flex;gap:7px"><input class="fi" id="sq" placeholder="es. Dune, Frank Herbert…" style="flex:1" onkeydown="if(event.key==='Enter')doSearch()"><button class="btn br bsm" onclick="doSearch()">Cerca</button></div>
+        </div>
+        <div id="sl" style="display:none;font-size:12px;font-style:italic;color:var(--ink3)">🔍 Ricerca…</div>
+        <div class="sres" id="sr"></div>
+      </div>
+      <div class="ipan card" id="ip-isbn">
+        <div style="font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;margin-bottom:9px">ISBN del libro</div>
+        <div class="fg"><label class="fl">ISBN-10 o ISBN-13</label>
+          <div style="display:flex;gap:7px"><input class="fi" id="isb" placeholder="es. 9788804668237" style="flex:1" onkeydown="if(event.key==='Enter')doISBN()"><button class="btn br bsm" onclick="doISBN()">Cerca</button></div>
+        </div>
+        <div id="isl" style="display:none;font-size:12px;font-style:italic;color:var(--ink3)">📚 Ricerca…</div>
+        <div id="isr"></div>
+      </div>
+      <div class="ipan card" id="ip-pdf">
+        <div style="font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;margin-bottom:5px">Importa da lista</div>
+        <div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:11px;line-height:1.6">Incolla un elenco oppure carica un file TXT/CSV. Formato: "Titolo - Autore" per riga.</div>
+        <div class="dz" id="dz" onclick="document.getElementById('pfi').click()" ondragover="dov(event)" ondragleave="dlv()" ondrop="ddr(event)">
+          <input type="file" id="pfi" accept=".txt,.csv" style="display:none" onchange="pfs(event)">
+          <div style="font-size:30px;margin-bottom:7px">📄</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;color:var(--ink2);margin-bottom:2px">Trascina un file</div>
+          <div style="font-size:11px;font-style:italic;color:var(--ink3)">oppure clicca · TXT, CSV</div>
+        </div>
+        <div id="pdfl" style="display:none;padding:11px 0;text-align:center;font-size:12px;font-style:italic;color:var(--ink3)">🤖 Estrazione…</div>
+        <div id="pdfr" style="display:none;margin-top:11px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+            <div style="font-family:'DM Serif Display',serif;font-size:14px;font-style:italic">Libri trovati</div>
+            <div style="display:flex;gap:6px"><button class="btn bg bsm" onclick="allPDF(true)">Tutti</button><button class="btn bg bsm" onclick="allPDF(false)">Nessuno</button></div>
+          </div>
+          <div id="pdfl2"></div>
+          <button class="btn br" onclick="impPDF()" style="margin-top:9px">➕ Importa selezionati</button>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--b)">
+          <div style="font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;margin-bottom:7px">Oppure incolla qui</div>
+          <textarea class="fi" id="ptxt" style="width:100%;min-height:90px;resize:vertical" placeholder="The Diviners - Libba Bray&#10;Hakutaku&#10;Ariadne Vol.3&#10;..."></textarea>
+          <button class="btn br bsm" onclick="parsePaste()" style="margin-top:7px">🔍 Estrai libri</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MISSIONI -->
+    <div class="page" id="pg-missioni">
+      <div class="ptitle">Missioni</div>
+      <div class="psub">Completa le sfide, guadagna XP, svuota la pila</div>
+      <div class="mgrid" id="mgrid"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
+    </div>
+
+    <!-- COACH -->
+    <div class="page" id="pg-coach">
+      <div class="ptitle">Il Bibliotecario</div>
+      <div class="psub">Consiglia solo dai libri che hai già</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
+          <div style="width:33px;height:33px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:16px">🌿</div>
+          <div><div style="font-family:'DM Serif Display',serif;font-size:13px;font-style:italic">Il Bibliotecario</div><div style="font-size:10px;font-style:italic;color:var(--sage)">● mai nuovi acquisti</div></div>
+        </div>
+        <div class="chips">
+          <div class="chip" onclick="ac(this.textContent)">Qualcosa di leggero</div>
+          <div class="chip" onclick="ac(this.textContent)">Solo un weekend</div>
+          <div class="chip" onclick="ac(this.textContent)">Finire una saga</div>
+          <div class="chip" onclick="ac(this.textContent)">Un manga</div>
+          <div class="chip" onclick="ac(this.textContent)">Brevissimo</div>
+          <div class="chip" onclick="ac(this.textContent)">Cosa aspetta da più tempo?</div>
+        </div>
+        <div style="display:flex;gap:7px">
+          <input class="cinput" id="cinp" placeholder="Descrivi umore, tempo, genere…" onkeydown="if(event.key==='Enter')sc()">
+          <button class="btn bs bsm" onclick="sc()">Chiedi →</button>
+        </div>
+        <div style="display:none;font-size:12px;font-style:italic;color:var(--ink3);margin-top:7px" id="cld">🤔 Consultando la pila…</div>
+        <div class="cresp" id="cresp">
+          <div id="crtext" style="font-size:13px;font-style:italic;color:var(--ink2);line-height:1.7;margin-bottom:7px"></div>
+          <div id="crbooks"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AMICI -->
+    <div class="page" id="pg-amici">
+      <div class="ptitle">Amici</div>
+      <div class="psub">Leggete insieme — ognuna con la sua pila</div>
+      <div class="sh mb" style="margin-bottom:10px">Aggiungi un'amica</div>
+      <div style="display:flex;gap:7px;margin-bottom:16px">
+        <input class="fi" id="fadd" placeholder="@nomeutente" style="max-width:250px" onkeydown="if(event.key==='Enter')addFriend()">
+        <button class="btn br bsm" onclick="addFriend()">Aggiungi</button>
+      </div>
+      <div class="sh mb" style="margin-bottom:10px">Le mie amiche <span class="sh-s" id="friends-count"></span></div>
+      <div id="friends-list"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
+      <div class="sh mb" style="margin-top:14px;margin-bottom:10px">Richieste in arrivo <span class="sh-s" id="pending-count"></span></div>
+      <div id="pending-list"></div>
+      <div class="sh mb" style="margin-top:14px;margin-bottom:10px">Letture insieme</div>
+      <div id="shared-readings-list"><div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna lettura condivisa ancora.</div></div>
+      <div class="sh mb" style="margin-top:14px;margin-bottom:10px">Feed amiche</div>
+      <div class="card" id="feed-list"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
+    </div>
+
+    <!-- PROFILO -->
+    <div class="page" id="pg-profilo">
+      <div class="ptitle">Profilo</div>
+      <div class="psub">Il tuo account e le tue statistiche</div>
+      <div class="ph">
+        <div class="pava" id="pava">?</div>
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:21px;font-style:italic" id="pname">—</div>
+          <div style="font-size:12px;font-style:italic;color:rgba(255,255,255,.5)" id="phandle">—</div>
+        </div>
+      </div>
+      <div class="sh mb" style="margin-bottom:10px">Modifica profilo</div>
+      <div class="card mb">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <div class="fg"><label class="fl">Nome</label><input class="fi" id="en" placeholder="Giulia"></div>
+          <div class="fg"><label class="fl">Username</label><input class="fi" id="eu" placeholder="@giulia_legge"></div>
+        </div>
+        <button class="btn br bsm" onclick="saveProfilo()">Salva modifiche</button>
+      </div>
+      <div class="sh mb" style="margin-bottom:10px">Statistiche avanzate</div>
+      <div class="card mb" id="advst"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
+      <div class="sh mb" style="margin-bottom:10px;border-color:rgba(181,34,15,.3)">Zona pericolosa</div>
+      <div class="card" style="border-color:rgba(181,34,15,.3)">
+        <div style="font-size:13px;font-style:italic;color:var(--ink2);margin-bottom:11px;line-height:1.6">Cancella tutti i libri e azzera i progressi. Irreversibile.</div>
+        <button class="btn bg bsm" style="border-color:var(--red);color:var(--red)" onclick="clearAll()">🗑️ Cancella tutto</button>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /app-screen -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav" id="bnav" style="display:none">
+  <div class="bn on" onclick="go('scaffale')"><div class="bn-i">📚</div><div class="bn-l">Scaffale</div></div>
+  <div class="bn" onclick="go('inserisci')"><div class="bn-i">➕</div><div class="bn-l">Inserisci</div></div>
+  <div class="bn" onclick="go('missioni')"><div class="bn-i">⚔️</div><div class="bn-l">Missioni</div></div>
+  <div class="bn" onclick="go('coach')"><div class="bn-i">🌿</div><div class="bn-l">Coach</div></div>
+  <div class="bn" onclick="go('amici')"><div class="bn-i">👥</div><div class="bn-l">Amici</div></div>
+  <div class="bn" onclick="go('profilo')"><div class="bn-i">👤</div><div class="bn-l">Profilo</div></div>
+</div>
+
+<!-- MODALS -->
+<div class="ov" id="bk-ov">
+  <div class="mod" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div style="font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--p)" id="mk-t"></div><div style="font-size:12px;font-style:italic;color:rgba(255,255,255,.5)" id="mk-a"></div></div>
+      <button class="mc" onclick="closeBK()">✕</button>
+    </div>
+    <div class="mb">
+      <div style="font-size:11px;font-style:italic;color:var(--ink3);margin-bottom:11px" id="mk-m"></div>
+      <div class="fg"><label class="fl">Stato</label><select class="fi" id="mk-s"><option value="unread">Non letto</option><option value="reading">In lettura</option><option value="done">Completato</option><option value="abandoned">Abbandonato</option></select></div>
+      <label class="fl">Progresso lettura</label>
+      <div class="prow">
+        <span class="plbl">Pagina attuale</span>
+        <input class="pi" id="mk-pc" type="number" min="0" oninput="updProg()">
+        <span style="font-size:11px;font-style:italic;color:var(--ink3)">di</span>
+        <input class="pi" id="mk-pt" type="number" min="1" oninput="updProg()">
+        <span style="font-size:11px;font-style:italic;color:var(--ink3)" id="mk-pct">0%</span>
+      </div>
+      <div class="pbw"><div class="pbf" id="mk-pf" style="width:0%"></div></div>
+      <div class="fg" style="margin-top:11px"><label class="fl">Note personali</label><textarea class="fi" id="mk-n" style="width:100%;min-height:65px;resize:vertical" placeholder="Impressioni, pensieri…"></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn br bsm" onclick="saveBK()">Salva</button>
+      <button class="btn bg bsm" onclick="delBook()" style="margin-left:auto;border-color:rgba(181,34,15,.4);color:var(--red)">🗑️ Rimuovi</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="dc-ov">
+  <div class="mod" style="max-width:560px" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div style="font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;color:var(--p)" id="dc-t"></div><div style="font-size:11px;font-style:italic;color:rgba(255,255,255,.45)" id="dc-m"></div></div>
+      <button class="mc" onclick="closeDC()">✕</button>
+    </div>
+    <div class="disc" style="border:none;border-radius:0">
+      <div class="cl" id="dcl"></div>
+      <div class="ac">
+        <div class="cav" style="width:26px;height:26px;flex-shrink:0" id="dc-av">?</div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;gap:6px">
+            <textarea class="aci" id="nc" rows="2" placeholder="Commento…"></textarea>
+            <input class="apg" id="np" type="number" placeholder="Pag.">
+          </div>
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:7px">
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;font-style:italic;color:var(--ink3);cursor:pointer"><input type="checkbox" id="isp" style="accent-color:var(--red)"> Spoiler</label>
+            <button class="btn br bsm" onclick="postC()">Pubblica →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:9px 14px;border-top:1px solid var(--b);text-align:right"><button class="btn bg bsm" onclick="closeDC()">Chiudi</button></div>
+  </div>
+</div>
+<script>
+// Supabase REST client v2 - no external dependency
+const SB = (function(){
+  const SURL = 'https://ytneldvoevjdcsdcxqwn.supabase.co';
+  const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0bmVsZHZvZXZqZGNzZGN4cXduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2OTkxMzgsImV4cCI6MjA5NjI3NTEzOH0.uG5wb_n1jUUEPVTA7D36zENZ0wPNqWuXMxzugQ7iuBk';
+  let _session = null;
+  let _authListeners = [];
+
+  function getToken() { return _session ? _session.access_token : KEY; }
+
+  function hdrs(extra) {
+    return Object.assign({
+      'apikey': KEY,
+      'Authorization': 'Bearer ' + getToken(),
+      'Content-Type': 'application/json'
+    }, extra || {});
+  }
+
+  function loadSession() {
+    try { const r = localStorage.getItem('pdv_session'); if(r) _session = JSON.parse(r); } catch(e) {}
+  }
+
+  function saveSession(s) {
+    _session = s;
+    try { if(s) localStorage.setItem('pdv_session', JSON.stringify(s)); else localStorage.removeItem('pdv_session'); } catch(e) {}
+  }
+
+  function notify(event, session) {
+    _authListeners.forEach(function(fn){ try { fn(event, session); } catch(e){} });
+  }
+
+  const auth = {
+    onAuthStateChange: function(fn) {
+      _authListeners.push(fn);
+      var s = _session;
+      setTimeout(function(){ fn(s ? 'SIGNED_IN' : 'SIGNED_OUT', s); }, 100);
+      return { data: { subscription: { unsubscribe: function(){} } } };
+    },
+
+    getSession: async function() {
+      if (!_session) return { data: { session: null }, error: null };
+      // Refresh if expiring
+      if (_session.expires_at && Date.now()/1000 > _session.expires_at - 60) {
+        try {
+          const r = await fetch(SURL + '/auth/v1/token?grant_type=refresh_token', {
+            method: 'POST',
+            headers: { 'apikey': KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: _session.refresh_token })
+          });
+          const d = await r.json();
+          if (d.access_token) {
+            saveSession(Object.assign({}, d, { expires_at: Math.floor(Date.now()/1000) + d.expires_in }));
+          } else { saveSession(null); return { data: { session: null }, error: null }; }
+        } catch(e) {}
+      }
+      return { data: { session: _session }, error: null };
+    },
+
+    signUp: async function(opts) {
+      try {
+        const r = await fetch(SURL + '/auth/v1/signup', {
+          method: 'POST',
+          headers: { 'apikey': KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: opts.email, password: opts.password, data: (opts.options && opts.options.data) || {} })
+        });
+        const d = await r.json();
+        if (!r.ok) return { data: { user: null, session: null }, error: { message: d.msg || d.error_description || d.message || 'Errore registrazione' } };
+        if (d.access_token) {
+          var sess = Object.assign({}, d, { expires_at: Math.floor(Date.now()/1000) + d.expires_in });
+          saveSession(sess);
+          notify('SIGNED_IN', sess);
+          return { data: { user: d.user, session: sess }, error: null };
+        }
+        return { data: { user: d, session: null }, error: null };
+      } catch(e) { return { data: { user: null, session: null }, error: { message: e.message } }; }
+    },
+
+    signInWithPassword: async function(opts) {
+      try {
+        const r = await fetch(SURL + '/auth/v1/token?grant_type=password', {
+          method: 'POST',
+          headers: { 'apikey': KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: opts.email, password: opts.password })
+        });
+        const d = await r.json();
+        if (!r.ok) return { data: null, error: { message: d.error_description || d.msg || 'Email o password errati.' } };
+        var sess = Object.assign({}, d, { expires_at: Math.floor(Date.now()/1000) + d.expires_in });
+        saveSession(sess);
+        notify('SIGNED_IN', sess);
+        return { data: { user: d.user, session: sess }, error: null };
+      } catch(e) { return { data: null, error: { message: e.message } }; }
+    },
+
+    signOut: async function() {
+      try {
+        await fetch(SURL + '/auth/v1/logout', {
+          method: 'POST',
+          headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + getToken() }
+        });
+      } catch(e) {}
+      saveSession(null);
+      notify('SIGNED_OUT', null);
+      return { error: null };
+    },
+
+    resetPasswordForEmail: async function(email) {
+      try {
+        const r = await fetch(SURL + '/auth/v1/recover', {
+          method: 'POST',
+          headers: { 'apikey': KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        return r.ok ? { data: {}, error: null } : { data: null, error: { message: 'Errore invio email' } };
+      } catch(e) { return { data: null, error: { message: e.message } }; }
+    }
+  };
+
+  function from(table) {
+    var _filters = [];
+    var _select = '*';
+    var _order = null;
+    var _limit = null;
+    var _single = false;
+    var _baseUrl = SURL + '/rest/v1/' + table;
+
+    function buildUrl(method) {
+      var params = [];
+      if (method === 'GET' || method === 'DELETE') {
+        if (_select && method === 'GET') params.push('select=' + encodeURIComponent(_select));
+        _filters.forEach(function(f){ params.push(f); });
+        if (_order) params.push('order=' + encodeURIComponent(_order));
+        if (_limit) params.push('limit=' + _limit);
+      }
+      return _baseUrl + (params.length ? '?' + params.join('&') : '');
+    }
+
+    var q = {
+      select: function(cols) { _select = cols || '*'; return q; },
+      single: function() { _single = true; return q; },
+      order: function(col, opts) {
+        _order = col + '.' + ((opts && opts.ascending === false) ? 'desc' : 'asc');
+        return q;
+      },
+      limit: function(n) { _limit = n; return q; },
+
+      eq: function(col, val) {
+        _filters.push(col + '=eq.' + encodeURIComponent(String(val)));
+        return q;
+      },
+      neq: function(col, val) {
+        _filters.push(col + '=neq.' + encodeURIComponent(String(val)));
+        return q;
+      },
+      or: function(str) {
+        _filters.push('or=(' + str + ')');
+        return q;
+      },
+      in: function(col, vals) {
+        _filters.push(col + '=in.(' + vals.map(function(v){ return encodeURIComponent(String(v)); }).join(',') + ')');
+        return q;
+      },
+
+      // SELECT - thenable
+      then: async function(resolve) {
+        try {
+          var h = hdrs(_single ? { 'Accept': 'application/vnd.pgrst.object+json', 'Prefer': 'return=representation' } : { 'Prefer': 'return=representation' });
+          var url = buildUrl('GET');
+          var r = await fetch(url, { headers: h });
+          var d = await r.json();
+          if (!r.ok) return resolve({ data: null, error: { message: JSON.stringify(d) } });
+          return resolve({ data: d, error: null });
+        } catch(e) { return resolve({ data: null, error: { message: e.message } }); }
+      },
+
+      // INSERT
+      insert: async function(data) {
+        try {
+          var r = await fetch(_baseUrl, {
+            method: 'POST',
+            headers: hdrs({ 'Prefer': 'return=representation' }),
+            body: JSON.stringify(data)
+          });
+          var d = await r.json();
+          if (!r.ok) return { data: null, error: { message: JSON.stringify(d) } };
+          return { data: Array.isArray(d) ? d[0] : d, error: null };
+        } catch(e) { return { data: null, error: { message: e.message } }; }
+      },
+
+      // UPDATE
+      update: async function(data) {
+        try {
+          var filterStr = _filters.join('&');
+          var url = _baseUrl + (filterStr ? '?' + filterStr : '');
+          var r = await fetch(url, {
+            method: 'PATCH',
+            headers: hdrs({ 'Prefer': 'return=representation' }),
+            body: JSON.stringify(data)
+          });
+          var d = await r.json();
+          if (!r.ok) return { data: null, error: { message: JSON.stringify(d) } };
+          return { data: Array.isArray(d) ? d[0] : d, error: null };
+        } catch(e) { return { data: null, error: { message: e.message } }; }
+      },
+
+      // UPSERT
+      upsert: async function(data) {
+        try {
+          var r = await fetch(_baseUrl, {
+            method: 'POST',
+            headers: hdrs({ 'Prefer': 'return=representation,resolution=merge-duplicates' }),
+            body: JSON.stringify(data)
+          });
+          var d = await r.json();
+          if (!r.ok) return { data: null, error: { message: JSON.stringify(d) } };
+          return { data: Array.isArray(d) ? d[0] : d, error: null };
+        } catch(e) { return { data: null, error: { message: e.message } }; }
+      },
+
+      // DELETE
+      delete: async function() {
+        try {
+          var filterStr = _filters.join('&');
+          var url = _baseUrl + (filterStr ? '?' + filterStr : '');
+          var r = await fetch(url, {
+            method: 'DELETE',
+            headers: hdrs({ 'Prefer': 'return=representation' })
+          });
+          if (!r.ok) {
+            var d = await r.json();
+            return { data: null, error: { message: JSON.stringify(d) } };
+          }
+          return { data: null, error: null };
+        } catch(e) { return { data: null, error: { message: e.message } }; }
+      }
+    };
+
+    return q;
+  }
+
+  loadSession();
+  return { auth: auth, from: from };
+})();
+
+
+</script>
+
+<script>
+
+// ═══ SUPABASE ═══
+
+// SB already defined above
+
+
+// ── AI Helper (Gemini) ──
+async function callAI(prompt) {
+  // Calls go through Netlify server function to avoid CORS
+  const r = await fetch('/api/claude', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({messages: [{role: 'user', content: prompt}]})
+  });
+  return r;
+}
+
+// ═══ STATE ═══
+let USER = null;
+let PROFILE = null;
+let BOOKS = [];
+let MISSIONS_DEF = [
+  {key:'first_book',ty:'Speciale',ti:'Finisci il tuo primo libro',xp:100,tg:1},
+  {key:'read_20min',ty:'Giornaliera',ti:'Leggi 20 minuti oggi',xp:50,tg:1,ac:'timer'},
+  {key:'complete_5',ty:'Speciale',ti:'Completa 5 opere',xp:200,tg:5},
+  {key:'complete_10',ty:'Speciale',ti:'Pulizia Profonda — completa 10 opere',xp:300,tg:10},
+  {key:'read_manga',ty:'Speciale',ti:'Completa un manga o fumetto',xp:100,tg:1},
+  {key:'finish_series',ty:'Saga',ti:'Finisci tutta una serie',xp:250,tg:1},
+  {key:'oldest_book',ty:'Speciale 🔥',ti:'Finisci il libro più vecchio della pila',xp:300,tg:1},
+  {key:'zero_pile',ty:'LEGGENDA',ti:'Azzera la pila della vergogna!',xp:1000,tg:1},
+];
+
+const SC=['b1','b2','b3','b4','b5','b6','b7','b8','bm1','bm2','bm3','bf1'];
+const LV=[{n:'Accumulatore',x:0},{n:'Acquirente Compulsivo',x:100},{n:'Aspirante Lettore',x:300},{n:'Cacciatore di Segnalibri',x:600},{n:'Svuota Scaffali',x:1000},{n:'Distruttore di Backlog',x:1600},{n:'Maestro della Pila',x:2400},{n:'Leggenda della Vergogna',x:3600}];
+
+// XP RULES — nuovi libri tolgono punti se più vecchi di 6 mesi
+const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+function xpForAddBook(addedAt) {
+  const age = Date.now() - new Date(addedAt).getTime();
+  return age > SIX_MONTHS_MS ? -15 : 0; // vecchio: -15 XP; recente: 0
+}
+
+// ═══ UTILS ═══
+function hs(s){let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))&0xffffffff;return Math.abs(h)%SC.length;}
+function spCol(b){return SC[hs((b.title||'')+(b.author||''))];}
+function toast(m,t=''){const e=document.createElement('div');e.className='tm '+(t==='ok'?'ok':t==='wn'?'wn':'');e.textContent=m;document.getElementById('toast').appendChild(e);setTimeout(()=>e.remove(),3500);}
+function timeAgo(ts){const d=Math.round((Date.now()-new Date(ts).getTime())/60000);if(d<2)return'ora';if(d<60)return d+'min fa';if(d<1440)return Math.round(d/60)+'h fa';return Math.round(d/1440)+'gg fa';}
+function setLoading(btn,loading,text=''){if(loading){btn.disabled=true;btn.dataset.orig=btn.textContent;btn.textContent='...';}else{btn.disabled=false;btn.textContent=btn.dataset.orig||text;}}
+
+// ═══ AUTH ═══
+function authTab(tab,el){
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.aform').forEach(f=>f.classList.remove('on'));
+  if(el)el.classList.add('on'); else document.querySelector('.atab').classList.add('on');
+  document.getElementById('af-'+tab).classList.add('on');
+}
+
+async function doLogin(e){
+  e.preventDefault();
+  const btn=document.getElementById('l-btn');setLoading(btn,true);
+  const err=document.getElementById('login-err');err.classList.remove('on');
+  const {error}=await SB.auth.signInWithPassword({email:document.getElementById('l-email').value,password:document.getElementById('l-pass').value});
+  setLoading(btn,false,'Entra nella Pila →');
+  if(error){err.textContent=error.message==='Invalid login credentials'?'Email o password errati.':error.message;err.classList.add('on');}
+}
+
+async function doRegister(e){
+  e.preventDefault();
+  const btn=document.getElementById('r-btn');setLoading(btn,true);
+  const err=document.getElementById('reg-err');err.classList.remove('on');
+  const name=document.getElementById('r-name').value.trim();
+  const username=document.getElementById('r-user').value.trim().replace('@','');
+  const email=document.getElementById('r-email').value;
+  const pass=document.getElementById('r-pass').value;
+  if(pass.length<8){err.textContent='Password troppo corta (min. 8 caratteri).';err.classList.add('on');setLoading(btn,false,'Crea la mia Pila →');return;}
+  const {error}=await SB.auth.signUp({email,password:pass,options:{data:{display_name:name,username}}});
+  setLoading(btn,false,'Crea la mia Pila →');
+  if(error){err.textContent=error.message;err.classList.add('on');}
+  else{err.style.background='var(--sage2)';err.style.borderColor='var(--sage)';err.style.color='var(--sage)';err.textContent='✓ Account creato! Controlla la tua email per confermare.';err.classList.add('on');}
+}
+
+async function doReset(e){
+  e.preventDefault();
+  const err=document.getElementById('reset-err');err.classList.remove('on');
+  const {error}=await SB.auth.resetPasswordForEmail(document.getElementById('rs-email').value);
+  if(error){err.textContent=error.message;err.classList.add('on');}
+  else{err.style.background='var(--sage2)';err.style.color='var(--sage)';err.textContent='✓ Link inviato! Controlla la tua email.';err.classList.add('on');}
+}
+
+async function doLogout(){
+  await SB.auth.signOut();
+  USER=null;PROFILE=null;BOOKS=[];
+  showScreen('auth');
+}
+
+// ═══ SCREEN MANAGEMENT ═══
+function showScreen(s){
+  const ld=document.getElementById('loading-screen');if(ld)ld.style.display='none';
+  document.getElementById('auth-screen').classList.remove('on');
+  document.getElementById('app-screen').classList.remove('on');
+  document.getElementById('bnav').style.display='none';
+  if(s==='auth'){document.getElementById('auth-screen').classList.add('on');}
+  else{document.getElementById('app-screen').classList.add('on');document.getElementById('bnav').style.display='flex';}
+}
+
+// ═══ NAV ═══
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  document.querySelectorAll('.bn').forEach(b=>{if(b.querySelector('.bn-l')?.textContent.toLowerCase().startsWith(id.substring(0,4)))b.classList.add('on');});
+  window.scrollTo(0,0);
+  if(id==='scaffale')rafAll();
+  if(id==='missioni')loadMissions();
+  if(id==='amici')loadFriends();
+  if(id==='profilo'){loadAdvStats();const p=PROFILE||{};document.getElementById('en').value=p.display_name||'';document.getElementById('eu').value=p.username||'';}
+}
+
+// ═══ INIT AFTER LOGIN ═══
+async function initApp(session){
+  USER=session.user;
+  // load profile
+  const {data:prof}=await SB.from('profiles').select('*').eq('id',USER.id).single();
+  PROFILE=prof;
+  // update UI
+  const init=(PROFILE?.display_name||'?').charAt(0).toUpperCase();
+  document.getElementById('tb-av').textContent=init;
+  document.getElementById('tb-user').textContent='@'+(PROFILE?.username||'');
+  document.getElementById('pava').textContent=init;
+  document.getElementById('pname').textContent=PROFILE?.display_name||'';
+  document.getElementById('phandle').textContent='@'+(PROFILE?.username||'');
+  document.getElementById('dc-av').textContent=init;
+  document.querySelectorAll('#me1,#me2').forEach(el=>{if(el)el.textContent=init;});
+  showScreen('app');
+  await loadBooks();
+  rafAll();
+}
+
+// ═══ BOOKS ═══
+async function loadBooks(){
+  if(!USER)return;
+  const {data,error}=await SB.from('books').select('*').eq('user_id',USER.id).order('added_at',{ascending:false});
+  if(!error)BOOKS=data||[];
+}
+
+async function addBook(d){
+  if(!USER){toast('Devi essere loggata!','wn');return;}
+  if(!USER.id){toast('Errore: ID utente mancante. Rieffettua il login.','wn');console.error('USER:',USER);return;}
+  const xpDelta=xpForAddBook(new Date());
+  const book={user_id:USER.id,title:d.title||d.titolo||'Senza titolo',author:d.author||d.autore||'',tipo:d.tipo||'libro',pagine:parseInt(d.pagine||d.pageCount)||null,anno:d.anno||null,genere:d.genere||'',serie:d.serie||'',status:'unread',page_cur:0,notes:''};
+  console.log('Inserting book:', book);
+  const {data,error}=await SB.from('books').insert(book);
+  if(error){toast('Errore: '+error.message,'wn');return null;}
+  const inserted = Array.isArray(data) ? data[0] : data;
+  if(!inserted || !inserted.id){toast('Errore: risposta database non valida','wn');console.error('Insert response:',data);return null;}
+  BOOKS.unshift(inserted);
+  // XP
+  if(xpDelta!==0){
+    await updateXP(xpDelta);
+    toast(xpDelta<0?`📚 «${inserted.title}» aggiunto — ${xpDelta} XP (vecchio acquisto!)`:(`📚 «${inserted.title}» aggiunto! Acquisto recente, no penalità.`),'ok');
+  } else {
+    toast(`📚 «${inserted.title}» aggiunto!`,'ok');
+  }
+  await logActivity('added_book',{title:inserted.title,tipo:inserted.tipo});
+  await checkMissions();
+  rafAll();
+  return data;
+}
+
+
+
+async function saveBook(id,updates){
+  const {data,error}=await SB.from('books').eq('id',id).update(updates);
+  if(error){toast('Errore salvataggio.','wn');return;}
+  const idx=BOOKS.findIndex(b=>b.id===id);
+  if(idx>=0)BOOKS[idx]={...BOOKS[idx],...data};
+  return data;
+}
+
+async function deleteBook2(id){
+  const {error}=await SB.from('books').eq('id',id).delete();
+  if(error){toast('Errore eliminazione.','wn');return false;}
+  BOOKS=BOOKS.filter(b=>b.id!==id);
+  return true;
+}
+
+// ═══ XP & LEVELS ═══
+async function updateXP(delta){
+  if(!PROFILE)return;
+  const newXP=Math.max(0,(PROFILE.xp||0)+delta);
+  await SB.from('profiles').eq('id',USER.id).update({xp:newXP});
+  PROFILE.xp=newXP;
+  updXP();
+}
+
+function updXP(){
+  const x=PROFILE?.xp||0;
+  let lv=0;for(let i=0;i<LV.length;i++)if(x>=LV[i].x)lv=i;
+  const nx=lv<LV.length-1?LV[lv+1]:null;
+  const pct=nx?Math.min(100,Math.round((x-LV[lv].x)/(nx.x-LV[lv].x)*100)):100;
+  document.getElementById('xp-n').textContent=lv+1;
+  document.getElementById('xp-name').textContent=LV[lv].n;
+  document.getElementById('xp-sub').textContent=x+' XP'+(nx?' / '+nx.x+' → '+nx.n:'— Max!');
+  document.getElementById('xp-fill').style.width=pct+'%';
+  const dn=BOOKS.filter(b=>b.status==='done').length;
+  if(dn>=1)document.getElementById('b1').classList.remove('lk');
+  if(dn>=10)document.getElementById('b2').classList.remove('lk');
+  if(dn>=100)document.getElementById('b4').classList.remove('lk');
+}
+
+// ═══ REFRESH ALL ═══
+function rafAll(){updStats();updXP();renShelf();renderList();renShame();}
+
+function updStats(){
+  const tot=BOOKS.length,dn=BOOKS.filter(b=>b.status==='done').length,rd=BOOKS.filter(b=>b.status==='reading').length,un=BOOKS.filter(b=>b.status==='unread').length;
+  document.getElementById('s-tot').textContent=tot;
+  document.getElementById('s-dn').textContent=dn;
+  document.getElementById('s-rd').textContent=rd;
+  document.getElementById('s-unr').textContent=un;
+  document.getElementById('s-pct').textContent=tot>0?Math.round(un/tot*100)+'% 😶':'';
+  document.getElementById('cnt').textContent=tot+' opere';
+  document.getElementById('shelf-m').textContent=tot+' libri';
+}
+
+function renShelf(){
+  const row=document.getElementById('shelf-r');
+  const books=BOOKS.filter(b=>b.status!=='done').slice(0,50);
+  if(!books.length){row.innerHTML='<div class="be" style="height:50px"></div><div style="font-size:13px;font-style:italic;color:var(--ink3);align-self:center;padding:14px">Aggiungi libri! <span style="color:var(--red);cursor:pointer" onclick="go(\'inserisci\')">→</span></div>';return;}
+  let h='<div class="be" style="height:50px"></div>';
+  books.forEach(b=>{const c=spCol(b),ht=80+Math.abs(hs(b.title+'h'))%50,w=11+Math.abs(hs(b.author+'w'))%15,cl=b.status==='reading'?' rd':'',t=b.title.length>16?b.title.slice(0,14)+'…':b.title;h+=`<div class="bk ${c}${cl}" style="width:${w}px;height:${ht}px" onclick="openBK('${b.id}')" title="${b.title}"><div class="st">${t}</div></div>`;});
+  h+='<div style="margin-left:6px;flex-shrink:0;align-self:flex-end;margin-bottom:2px"><div class="cv" style="height:32px"></div></div>';
+  row.innerHTML=h;
+}
+
+function renderList(){
+  const g=document.getElementById('bgrid'),fs=document.getElementById('fs').value,ft=document.getElementById('ft').value,fq=(document.getElementById('fq').value||'').toLowerCase();
+  const books=BOOKS.filter(b=>{if(fs!=='all'&&b.status!==fs)return false;if(ft!=='all'&&(b.tipo||'libro')!==ft)return false;if(fq&&!b.title.toLowerCase().includes(fq)&&!(b.author||'').toLowerCase().includes(fq))return false;return true;});
+  if(!books.length){g.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3);grid-column:1/-1">Nessun libro.</div>';return;}
+  const lbl={unread:'Non letto',reading:'In lettura',done:'Completato',abandoned:'Abbandonato'};
+  const cls2={unread:'su',reading:'srd',done:'sdn',abandoned:'sab'};
+  g.innerHTML=books.map(b=>{const c=spCol(b),pct=b.pagine&&b.page_cur?Math.round(b.page_cur/b.pagine*100):0,days=Math.round((Date.now()-new Date(b.added_at).getTime())/86400000);return`<div class="bc" onclick="openBK('${b.id}')"><div class="bc-sp ${c}"><div class="bc-t">${b.title}</div>${b.status==='reading'&&pct?`<div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.2)"><div style="height:100%;width:${pct}%;background:rgba(255,255,255,.7)"></div></div>`:''}</div><div class="bc-b"><div class="bc-ti">${b.title}</div><div class="bc-au">${b.author||'—'}</div><div class="bc-st ${cls2[b.status]||'su'}">${lbl[b.status]||'Non letto'}</div>${b.status==='unread'?`<div style="font-size:9px;color:var(--ink3);margin-top:2px;font-style:italic">${days}gg fa</div>`:''}${b.serie?`<div style="font-size:9px;color:var(--gold);margin-top:2px;font-style:italic">📚 ${b.serie}</div>`:''}</div></div>`;}).join('');
+}
+
+function renShame(){
+  const el=document.getElementById('shame');
+  if(!BOOKS.length){el.innerHTML='<div style="font-size:12px;font-style:italic;color:var(--ink3)">Aggiungi libri.</div>';return;}
+  const un=BOOKS.filter(b=>b.status!=='done').sort((a,b)=>new Date(a.added_at)-new Date(b.added_at));
+  const old=un[0],days=old?Math.round((Date.now()-new Date(old.added_at).getTime())/86400000):0;
+  const ac={};BOOKS.forEach(b=>{if(b.author)ac[b.author]=(ac[b.author]||0)+1;});
+  const ta=Object.entries(ac).sort((a,b)=>b[1]-a[1])[0];
+  const gc={};BOOKS.filter(b=>b.status==='unread').forEach(b=>{if(b.genere)gc[b.genere]=(gc[b.genere]||0)+1;});
+  const tg=Object.entries(gc).sort((a,b)=>b[1]-a[1])[0];
+  const sc2={};BOOKS.forEach(b=>{if(b.serie)sc2[b.serie]=(sc2[b.serie]||0)+1;});
+  const ts=Object.entries(sc2).sort((a,b)=>b[1]-a[1])[0];
+  let h='';
+  if(old)h+=`<div class="shbox"><span style="font-size:20px">💀</span><div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:2px">Vergogna Suprema</div><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)">${old.title}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">${days} giorni nella pila</div></div></div>`;
+  if(ta)h+=`<div class="prow2"><span class="plb">Autore più accumulato</span><div class="ptr"><div class="pfl" style="width:80%;background:linear-gradient(to right,#c03820,#9e2a1a)"></div></div><span class="ppc" style="color:var(--red)">${ta[0].split(' ').pop()}×${ta[1]}</span></div>`;
+  if(tg)h+=`<div class="prow2"><span class="plb">Genere più ignorato</span><div class="ptr"><div class="pfl" style="width:65%;background:linear-gradient(to right,#9e6e22,#7a5218)"></div></div><span class="ppc">${tg[0].slice(0,8)}</span></div>`;
+  if(ts)h+=`<div class="prow2"><span class="plb">Serie più accumulata</span><div class="ptr"><div class="pfl" style="width:90%;background:linear-gradient(to right,#7a3898,#5a2878)"></div></div><span class="ppc" style="color:#7a3898">${ts[0]}×${ts[1]}</span></div>`;
+  el.innerHTML=h||'<div style="font-size:12px;font-style:italic;color:var(--ink3)">Inizia ad aggiungere libri!</div>';
+}
+
+// ═══ BOOK MODAL ═══
+let CUR=null;
+function openBK(id){CUR=id;const b=BOOKS.find(x=>x.id===id);if(!b)return;document.getElementById('mk-t').textContent=b.title;document.getElementById('mk-a').textContent=b.author||'—';document.getElementById('mk-m').textContent=[b.tipo,b.genere,b.anno,b.pagine?b.pagine+' pag.':null,b.serie].filter(Boolean).join(' · ');document.getElementById('mk-s').value=b.status||'unread';document.getElementById('mk-pc').value=b.page_cur||0;document.getElementById('mk-pt').value=b.pagine||'';document.getElementById('mk-n').value=b.notes||'';updProg();document.getElementById('bk-ov').classList.add('on');}
+function closeBK(){document.getElementById('bk-ov').classList.remove('on');CUR=null;}
+function updProg(){const c=parseInt(document.getElementById('mk-pc').value)||0,t=parseInt(document.getElementById('mk-pt').value)||1,p=Math.min(100,Math.round(c/t*100));document.getElementById('mk-pct').textContent=p+'%';document.getElementById('mk-pf').style.width=p+'%';}
+
+async function saveBK(){
+  if(!CUR)return;
+  const b=BOOKS.find(x=>x.id===CUR);if(!b)return;
+  const oldStatus=b.status;
+  const newStatus=document.getElementById('mk-s').value;
+  const updates={status:newStatus,page_cur:parseInt(document.getElementById('mk-pc').value)||0,pagine:parseInt(document.getElementById('mk-pt').value)||b.pagine,notes:document.getElementById('mk-n').value};
+  if(newStatus==='reading'&&oldStatus!=='reading')updates.started_at=new Date().toISOString();
+  if(newStatus==='done'&&oldStatus!=='done'){updates.finished_at=new Date().toISOString();}
+  await saveBook(CUR,updates);
+  if(oldStatus!=='reading'&&newStatus==='reading'){await updateXP(20);toast('+20 XP — Iniziata la lettura! 📖','ok');}
+  if(oldStatus!=='done'&&newStatus==='done'){
+    await updateXP(100);
+    toast('+100 XP — Libro completato! 🎉','ok');
+    await logActivity('completed_book',{title:b.title});
+    await checkMissions();
+  }
+  closeBK();rafAll();
+}
+
+async function delBook(){
+  if(!CUR)return;
+  const b=BOOKS.find(x=>x.id===CUR);
+  if(!confirm(`Rimuovere «${b?.title}» dalla pila?`))return;
+  const ok=await deleteBook2(CUR);
+  if(ok){closeBK();rafAll();toast('Libro rimosso.');}
+}
+
+// ═══ INSERT ═══
+function itab(id,el){document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.ipan').forEach(p=>p.classList.remove('on'));el.classList.add('on');document.getElementById('ip-'+id).classList.add('on');}
+
+async function addManuale(){
+  const t=document.getElementById('m-t').value.trim();if(!t){toast('Inserisci il titolo.','wn');return;}
+  await addBook({titolo:t,autore:document.getElementById('m-a').value.trim(),tipo:document.getElementById('m-tp').value,pagine:document.getElementById('m-p').value,anno:document.getElementById('m-an').value,genere:document.getElementById('m-g').value,serie:document.getElementById('m-s').value});
+  ['m-t','m-a','m-p','m-an','m-g','m-s'].forEach(id=>document.getElementById(id).value='');
+}
+
+
+
+async function pfile(file){document.getElementById('pdfl').style.display='block';document.getElementById('pdfr').style.display='none';try{PDFEX=extBooks(await file.text());renPDF();}catch(e){toast('Errore file.','wn');}document.getElementById('pdfl').style.display='none';}
+function extBooks(txt){const lines=txt.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l.length>2&&l.length<200);const res=[],seen=new Set();lines.forEach(line=>{if(/^\d+$/.test(line)||line.startsWith('http'))return;let ti='',au='',found=false;for(const sep of[' - ',' – ',' — ',' di ',' by ',', ']){const i=line.indexOf(sep);if(i>2&&i<line.length-3){ti=line.slice(0,i).trim();au=line.slice(i+sep.length).trim();found=true;break;}}if(!found)ti=line;ti=ti.replace(/^["«»\-\*]+|["«»\-\*]+$/g,'').trim();const k=ti.toLowerCase();if(!seen.has(k)&&ti.length>2){seen.add(k);res.push({title:ti,author:au});}});return res.slice(0,200);}
+function renPDF(){const el=document.getElementById('pdfl2');el.innerHTML=!PDFEX.length?'<div style="font-size:12px;font-style:italic;color:var(--ink3)">Nessun libro riconosciuto.</div>':PDFEX.map((b,i)=>`<div class="pbr"><input type="checkbox" class="pdf-check" id="pbc-${i}" checked style="accent-color:var(--red);width:14px;height:14px;cursor:pointer"><div style="flex:1"><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)">${b.title}</div>${b.author?`<div style="font-size:10px;font-style:italic;color:var(--ink3)">${b.author}</div>`:''}</div></div>`).join('');document.getElementById('pdfr').style.display='block';}
+function allPDF(v){document.querySelectorAll('.pdf-check').forEach(c=>c.checked=v);}
+async function impPDF(){
+  const sel=PDFEX.filter((_,i)=>document.getElementById('pbc-'+i)?.checked);
+  if(!sel.length){toast('Nessuno selezionato.','wn');return;}
+  for(const b of sel)await addBook(b);
+  document.getElementById('pdfr').style.display='none';PDFEX=[];
+  toast(sel.length+' libri importati!','ok');
+}
+function parsePaste(){const t=document.getElementById('ptxt').value;if(!t.trim()){toast('Incolla del testo prima.','wn');return;}PDFEX=extBooks(t);renPDF();}
+
+// ═══ RUOTA ═══
+let WR=0;
+function spin(){
+  const tp=document.getElementById('wt').value,ln=document.getElementById('wl').value;
+  let pool=BOOKS.filter(b=>b.status==='unread'||b.status==='reading');
+  if(tp!=='all')pool=pool.filter(b=>(b.tipo||'libro')===tp);
+  if(ln==='short')pool=pool.filter(b=>b.pagine&&b.pagine<200);
+  if(ln==='mid')pool=pool.filter(b=>b.pagine&&b.pagine>=200&&b.pagine<=400);
+  if(ln==='long')pool=pool.filter(b=>b.pagine&&b.pagine>400);
+  if(!pool.length){toast('Nessun libro per questi filtri.','wn');return;}
+  const w=document.getElementById('wheel');WR+=1440+Math.random()*720;w.style.transform=`rotate(${WR}deg)`;
+  setTimeout(()=>{
+    const b=pool[Math.floor(Math.random()*pool.length)],days=Math.round((Date.now()-new Date(b.added_at).getTime())/86400000);
+    document.getElementById('rbox').innerHTML=`<div class="rt">✦ La ruota ha parlato</div><div class="rti">${b.title}</div><div class="rau">${b.author||'—'}</div><ul class="rrs"><li>Nella pila da ${days} giorni</li>${b.pagine?`<li>~${Math.round(b.pagine/30)}h di lettura</li>`:''}<li>${b.status==='reading'?'Già iniziato — finiscilo!':'Ancora da aprire'}</li>${b.serie?`<li>Serie: ${b.serie}</li>`:''}</ul><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn bs bsm" onclick="accWheel('${b.id}')">✓ Accetto</button><button class="btn bg bsm" onclick="spin()">↺ Rigira</button><button class="btn bg bsm" onclick="openBK('${b.id}')">📖 Dettagli</button></div>`;
+  },3200);
+}
+async function accWheel(id){
+  const b=BOOKS.find(x=>x.id===id);if(!b)return;
+  if(b.status==='unread'){await saveBook(id,{status:'reading',started_at:new Date().toISOString()});b.status='reading';await updateXP(20);toast('+20 XP — Buona lettura con «'+b.title+'»! 📖','ok');}
+  rafAll();
+}
+
+// ═══ MISSIONS ═══
+async function loadMissions(){
+  if(!USER)return;
+  const {data:userMissions}=await SB.from('missions').select('*').eq('user_id',USER.id);
+  const doneDefs=BOOKS.filter(b=>b.status==='done');
+  const grid=document.getElementById('mgrid');
+  grid.innerHTML=MISSIONS_DEF.map(def=>{
+    const um=userMissions?.find(m=>m.mission_key===def.key);
+    const done=um?.completed||false;
+    let pr=um?.progress||0;
+    // auto-calc progress
+    if(def.key==='first_book'||def.key==='complete_5'||def.key==='complete_10')pr=Math.min(doneDefs.length,def.tg);
+    if(def.key==='zero_pile')pr=BOOKS.filter(b=>b.status==='unread'||b.status==='reading').length===0?1:0;
+    return`<div class="mc2 ${done?'dn2':''}"><div class="mty">${def.ty}</div><div class="mti">${def.ti}</div><div class="mxp">${done?'Completata ✓':'+'+def.xp+' XP'}</div><div class="mbar"><div class="mfil" style="width:${Math.min(100,Math.round(pr/def.tg*100))}%"></div></div>${!done?`<div style="font-size:10px;font-style:italic;color:var(--ink3);margin-top:4px">${pr}/${def.tg}</div>`:''}${!done&&def.ac==='timer'?`<button class="mbtn" onclick="startTimer()">▶ Avvia timer 20min</button>`:''}</div>`;
+  }).join('');
+}
+
+function startTimer(){toast('⏱️ Timer 20min avviato! Buona lettura.','ok');}
+
+async function checkMissions(){
+  if(!USER)return;
+  const doneDefs=BOOKS.filter(b=>b.status==='done');
+  for(const def of MISSIONS_DEF){
+    let pr=0,done=false;
+    if(def.key==='first_book'||def.key==='complete_5'||def.key==='complete_10'){pr=doneDefs.length;done=pr>=def.tg;}
+    if(def.key==='zero_pile'){pr=BOOKS.filter(b=>b.status==='unread'||b.status==='reading').length===0?1:0;done=pr>=def.tg;}
+    if(done){
+      const {data:existing}=await SB.from('missions').select('id,completed').eq('user_id',USER.id).eq('mission_key',def.key).single();
+      if(!existing?.completed){
+        await SB.from('missions').upsert({user_id:USER.id,mission_key:def.key,progress:pr,target:def.tg,completed:true,completed_at:new Date().toISOString()});
+        await updateXP(def.xp);
+        toast(`🏆 Missione completata: ${def.ti} +${def.xp} XP!`,'ok');
+      }
+    }
+  }
+}
+
+// ═══ ACTIVITY LOG ═══
+async function logActivity(type,payload){
+  if(!USER)return;
+  await SB.from('activities').insert({user_id:USER.id,type,payload});
+}
+
+// ═══ FRIENDS ═══
+async function loadFriends(){
+  if(!USER)return;
+  // Load accepted friendships
+  const {data:fships}=await SB.from('friendships').select('*,profiles!friendships_friend_id_fkey(id,username,display_name,xp),profiles!friendships_user_id_fkey(id,username,display_name,xp)').eq('status','accepted').or(`user_id.eq.${USER.id},friend_id.eq.${USER.id}`);
+  const friends=(fships||[]).map(f=>{const isMe=f.user_id===USER.id;return isMe?f['profiles!friendships_friend_id_fkey']:f['profiles!friendships_user_id_fkey'];}).filter(Boolean);
+  document.getElementById('friends-count').textContent=friends.length+' amiche';
+  const fl=document.getElementById('friends-list');
+  if(!friends.length){fl.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessuna amica ancora. Cerca per username!</div>';return;}
+  fl.innerHTML=await Promise.all(friends.map(async f=>{
+    const {data:fBooks}=await SB.from('books').select('id,status,tipo').eq('user_id',f.id);
+    const fDone=(fBooks||[]).filter(b=>b.status==='done').length;
+    const fUnread=(fBooks||[]).filter(b=>b.status==='unread').length;
+    const myTitles=new Set(BOOKS.map(b=>b.title.toLowerCase()));
+    const {data:fBooksFull}=await SB.from('books').select('title,tipo').eq('user_id',f.id);
+    const common=(fBooksFull||[]).filter(b=>myTitles.has(b.title.toLowerCase()));
+    const init=(f.display_name||'?').charAt(0).toUpperCase();
+    const colors=['#9e2a1a','#1e3d6e','#1e5030','#5a2878','#7a5218'];
+    const col=colors[Math.abs(hs(f.id))%colors.length];
+    return`<div class="fc"><div class="fca" style="background:${col}">${init}</div><div class="fci"><div class="fcn">${f.display_name}</div><div class="fch">@${f.username}</div><div class="fcs"><div class="fcst"><strong>${(fBooks||[]).length}</strong> libri</div><div class="fcst"><strong>${fDone}</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>${fUnread}</strong> pila</div></div>${common.length?`<div style="margin-top:6px"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);opacity:.7;margin-bottom:4px">✦ ${common.length} libri in comune</div><div class="msp">${common.slice(0,5).map(b=>`<div class="ms ${spCol(b)}" style="height:40px"><div class="tt">${b.title}</div></div>`).join('')}${common.length>5?`<span style="font-size:10px;font-style:italic;color:var(--ink3);align-self:center;margin-left:4px">+${common.length-5} →</span>`:''}</div></div>`:''}</div><div class="fca2"><button class="btn br bsm" onclick="proponi('${f.display_name}','${f.id}')">📖 Proponi</button><button class="btn bg bsm" onclick="openDisc('chat-${f.id}')">💬 Chat</button></div></div>`;
+  })).then(arr=>arr.join(''));
+
+  // Load pending
+  const {data:pending}=await SB.from('friendships').select('*,profiles!friendships_user_id_fkey(id,username,display_name)').eq('friend_id',USER.id).eq('status','pending');
+  document.getElementById('pending-count').textContent=(pending?.length||0)+' in attesa';
+  document.getElementById('pending-list').innerHTML=(pending||[]).length===0?'<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessuna richiesta.</div>':(pending||[]).map(p=>{const f=p['profiles!friendships_user_id_fkey'];const init=(f?.display_name||'?').charAt(0).toUpperCase();return`<div class="fc" style="align-items:center"><div class="fca" style="background:#5a2878;width:34px;height:34px;font-size:14px">${init}</div><div class="fci"><div class="fcn" style="font-size:14px">${f?.display_name}</div><div class="fch">@${f?.username}</div></div><div class="fca2"><button class="btn bs bsm" onclick="acceptFriend('${p.id}')">✓ Accetta</button><button class="btn bg bsm" onclick="rejectFriend('${p.id}')">✕</button></div></div>`;}).join('');
+
+  // Activity feed
+  const friendIds=friends.map(f=>f.id);
+  if(friendIds.length){
+    const {data:acts}=await SB.from('activities').select('*,profiles(display_name)').in('user_id',friendIds).order('created_at',{ascending:false}).limit(20);
+    const icons={added_book:'📚',completed_book:'🏆',started_reading:'📖',level_up:'⬆️'};
+    const msgs={added_book:(p,a)=>`<strong>${p}</strong> ha aggiunto <em>${a.payload?.title||'un libro'}</em>`,completed_book:(p,a)=>`<strong>${p}</strong> ha completato <em>${a.payload?.title||'un libro'}</em> 🎉`,started_reading:(p,a)=>`<strong>${p}</strong> ha iniziato a leggere <em>${a.payload?.title||'un libro'}</em>`,level_up:(p,a)=>`<strong>${p}</strong> è salita di livello! ⬆️`};
+    document.getElementById('feed-list').innerHTML=(acts||[]).length?((acts||[]).map(a=>{const p=a.profiles?.display_name||'Amica';const fn=msgs[a.type];return`<div class="upd"><div class="upi">${icons[a.type]||'📌'}</div><div><div class="upt">${fn?fn(p,a):`<strong>${p}</strong> ha fatto qualcosa`}</div><div class="utm">${timeAgo(a.created_at)}</div></div></div>`;}).join('')):'<div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna attività recente.</div>';
+  }
+}
+
+async function addFriend(){
+  const v=document.getElementById('fadd').value.trim().replace('@','');if(!v){toast('Inserisci username.','wn');return;}
+  const {data:found}=await SB.from('profiles').select('id,display_name').eq('username',v).single();
+  if(!found){toast('Utente @'+v+' non trovato.','wn');return;}
+  if(found.id===USER.id){toast('Non puoi aggiungere te stessa!','wn');return;}
+  const {error}=await SB.from('friendships').insert({user_id:USER.id,friend_id:found.id,status:'pending'});
+  if(error){toast('Richiesta già inviata o amiche già aggiunte.','wn');return;}
+  document.getElementById('fadd').value='';
+  toast('Richiesta inviata a '+found.display_name+'!','ok');
+}
+
+async function acceptFriend(id){
+  await SB.from('friendships').eq('id',id).update({status:'accepted'});
+  toast('Amica aggiunta!','ok');
+  loadFriends();
+}
+async function rejectFriend(id){
+  await SB.from('friendships').eq('id',id).delete();
+  loadFriends();
+}
+async function proponi(name,friendId){
+  const un=BOOKS.filter(b=>b.status==='unread');if(!un.length){toast('Aggiungi libri prima!','wn');return;}
+  const b=un[Math.floor(Math.random()*un.length)];
+  toast('Proposta a '+name+': «'+b.title+'» — in futuro arriverà una notifica! 📖','ok');
+}
+
+// ═══ COMMENTI ═══
+let CDC=null,CDR=null;
+async function openDisc(key){
+  CDC=key;
+  let title=key,meta='';
+  if(key.startsWith('chat-')){const fid=key.replace('chat-','');const {data:f}=await SB.from('profiles').select('display_name').eq('id',fid).single();title='Chat con '+f?.display_name;meta='Privata';}
+  document.getElementById('dc-t').textContent=title;
+  document.getElementById('dc-m').textContent=meta;
+  // Find or create shared reading
+  let {data:sr}=await SB.from('shared_readings').select('id').eq('book_title',key).eq('created_by',USER.id).single();
+  if(!sr){const {data:newSr}=await SB.from('shared_readings').insert({book_title:key,book_author:'',created_by:USER.id}).select().single();sr=newSr;}
+  CDR=sr?.id;
+  await loadComments();
+  document.getElementById('dc-ov').classList.add('on');
+}
+function closeDC(){document.getElementById('dc-ov').classList.remove('on');CDC=null;CDR=null;}
+
+async function loadComments(){
+  if(!CDR)return;
+  const {data:cs}=await SB.from('comments').select('*,profiles(display_name)').eq('reading_id',CDR).order('created_at',{ascending:true});
+  const cl=document.getElementById('dcl');
+  cl.innerHTML=!(cs?.length)?'<div style="padding:16px;font-style:italic;color:var(--ink3);text-align:center;font-size:13px">Nessun commento ancora 💬</div>':
+  (cs||[]).map((c,i)=>{const init=(c.profiles?.display_name||'?').charAt(0).toUpperCase();const isMe=c.user_id===USER.id;return`<div class="cm"><div class="cav" style="background:${isMe?'var(--red)':'#1e3d6e'}">${init}</div><div class="cb"><div class="che"><span class="can">${c.profiles?.display_name||'?'}</span>${c.page_ref?`<span class="cpg">pag.${c.page_ref}</span>`:''}<span class="ctm">${timeAgo(c.created_at)}</span></div><div class="ctx">${c.is_spoiler?`<span class="sp2" onclick="this.style.color='var(--p)';this.style.background='var(--ink2)'">[SPOILER — clicca] ${c.text}</span>`:c.text}</div><button class="lbtn" onclick="likeC('${c.id}')">♥ ${c.likes>0?c.likes+' ':''} Mi piace</button></div></div>`;}).join('');
+  cl.scrollTop=cl.scrollHeight;
+}
+
+async function postC(){
+  const text=document.getElementById('nc').value.trim();if(!text||!CDR)return;
+  const {error}=await SB.from('comments').insert({reading_id:CDR,user_id:USER.id,text,page_ref:parseInt(document.getElementById('np').value)||null,is_spoiler:document.getElementById('isp').checked});
+  if(error){toast('Errore.','wn');return;}
+  document.getElementById('nc').value='';document.getElementById('np').value='';document.getElementById('isp').checked=false;
+  await loadComments();toast('Pubblicato!','ok');
+}
+
+async function likeC(id){
+  const {data:c}=await SB.from('comments').select('likes').eq('id',id).single();
+  await SB.from('comments').update({likes:(c?.likes||0)+1}).eq('id',id);
+  await loadComments();
+}
+
+// ═══ PROFILO ═══
+async function saveProfilo(){
+  const name=document.getElementById('en').value.trim();
+  const username=document.getElementById('eu').value.trim().replace('@','');
+  if(!name){toast('Inserisci un nome.','wn');return;}
+  const {error}=await SB.from('profiles').eq('id',USER.id).update({display_name:name,username});
+  if(error){toast('Errore: '+error.message,'wn');return;}
+  PROFILE={...PROFILE,display_name:name,username};
+  const init=name.charAt(0).toUpperCase();
+  document.getElementById('tb-av').textContent=init;
+  document.getElementById('tb-user').textContent='@'+username;
+  document.getElementById('pava').textContent=init;
+  document.getElementById('pname').textContent=name;
+  document.getElementById('phandle').textContent='@'+username;
+  document.getElementById('dc-av').textContent=init;
+  toast('Profilo aggiornato!','ok');
+}
+
+async function loadAdvStats(){
+  const el=document.getElementById('advst');
+  if(!BOOKS.length){el.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3)">Aggiungi libri per le statistiche.</div>';return;}
+  const dn=BOOKS.filter(b=>b.status==='done').length;
+  const pr=BOOKS.reduce((s,b)=>s+(b.page_cur||0),0);
+  const xp=PROFILE?.xp||0;
+  const bt={};BOOKS.forEach(b=>{const t=b.tipo||'libro';bt[t]=(bt[t]||0)+1;});
+  const recenti=BOOKS.filter(b=>{const age=Date.now()-new Date(b.added_at).getTime();return age<SIX_MONTHS_MS;}).length;
+  const vecchi=BOOKS.filter(b=>{const age=Date.now()-new Date(b.added_at).getTime();return age>SIX_MONTHS_MS&&b.status==='unread';}).length;
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:9px;margin-bottom:12px">
+    <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:24px">${pr.toLocaleString()}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">pagine lette</div></div>
+    <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:24px">${dn}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">completati</div></div>
+    <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:24px">${xp}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">XP totali</div></div>
+  </div>
+  <div style="background:var(--red3);border:1px solid rgba(181,34,15,.2);border-radius:7px;padding:9px 11px;margin-bottom:10px;font-size:12px;font-style:italic;color:var(--ink2);line-height:1.6">
+    ⚠️ <strong>${vecchi}</strong> libri vecchi nella pila tolgono XP quando aggiungi nuovi libri (acquistati da più di 6 mesi).<br>
+    ✅ <strong>${recenti}</strong> libri recenti (ultimi 6 mesi) non penalizzano.
+  </div>
+  ${Object.entries(bt).map(([t,n])=>`<div class="prow2"><span class="plb" style="text-transform:capitalize">${t}</span><div class="ptr"><div class="pfl" style="width:${Math.round(n/BOOKS.length*100)}%;background:linear-gradient(to right,var(--red),var(--gold))"></div></div><span class="ppc">${n}</span></div>`).join('')}`;
+}
+
+async function clearAll(){
+  if(!confirm('Cancellare TUTTI i '+BOOKS.length+' libri e azzerare i progressi? Irreversibile.'))return;
+  await SB.from('books').eq('user_id',USER.id).delete();
+  await SB.from('profiles').eq('id',USER.id).update({xp:0});
+  if(PROFILE)PROFILE.xp=0;
+  BOOKS=[];rafAll();toast('Pila azzerata.','wn');
+}
+
+// ═══ COACH ═══
+function ac(q){document.getElementById('cinp').value=q;sc();}
+async function sc(){
+  const q=document.getElementById('cinp').value.trim();if(!q)return;
+  const un=BOOKS.filter(b=>b.status!=='done');if(!un.length){toast('Aggiungi libri per il Coach!','wn');return;}
+  document.getElementById('cld').style.display='block';document.getElementById('cresp').classList.remove('on');
+  const bl=un.slice(0,30).map(b=>`"${b.title}"${b.author?' di '+b.author:''}${b.pagine?' ('+b.pagine+'p)':''}${b.genere?' ['+b.genere+']':''}${b.tipo!=='libro'?' ['+b.tipo+']':''}`).join('\n');
+  const pr=`Sei Il Bibliotecario di "La Pila della Vergogna". Consiglia SOLO libri presenti nella pila. Mai nuovi acquisti.\n\nPila:\n${bl}\n\nUtente: "${q}"\n\nRispondi in italiano, tono caldo e ironico, max 3 frasi. Consiglia 1-3 libri: **Titolo** — motivo.`;
+  try{
+    const r=await callAI(pr);
+    const d=await r.json();const txt=(d.content||[]).map(c=>c.text||'').join('');
+    document.getElementById('cld').style.display='none';
+    document.getElementById('crtext').innerHTML=txt.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    const pills=[...txt.matchAll(/\*\*([^*]+)\*\*/g)].map(m=>m[1]);
+    document.getElementById('crbooks').innerHTML=pills.map(p=>`<span class="cpill" onclick="openByTitle('${p.replace(/'/g,"\\'")}')">📖 ${p}</span>`).join('');
+    document.getElementById('cresp').classList.add('on');
+  }catch(e){
+    document.getElementById('cld').style.display='none';
+    const b=un[Math.floor(Math.random()*un.length)];
+    document.getElementById('crtext').innerHTML=`Connessione non disponibile. Ti consiglio comunque: <strong>${b.title}</strong> — è lì che aspetta. 😏`;
+    document.getElementById('crbooks').innerHTML=`<span class="cpill">📖 ${b.title}</span>`;
+    document.getElementById('cresp').classList.add('on');
+  }
+}
+function openByTitle(t){const b=BOOKS.find(x=>x.title.toLowerCase().includes(t.toLowerCase()));if(b)openBK(b.id);}
+
+// ═══ MODALS CLICK OUTSIDE ═══
+document.getElementById('bk-ov').addEventListener('click',function(e){if(e.target===this)closeBK();});
+document.getElementById('dc-ov').addEventListener('click',function(e){if(e.target===this)closeDC();});
+
+// ═══ WAIT FOR SUPABASE ═══
+// ═══ AUTH STATE LISTENER ═══
+SB.auth.onAuthStateChange(async (event, session) => {
+  console.log('Auth event:', event, !!session);
+  if(event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION'){
+    if(session) await initApp(session);
+    else showScreen('auth');
+  } else if(event === 'SIGNED_OUT'){
+    USER=null;PROFILE=null;BOOKS=[];
+    showScreen('auth');
+  } else if(event === 'PASSWORD_RECOVERY'){
+    showScreen('auth');
+    authTab('reset', null);
+  }
+});
+
+// Initial check — handle email confirmation redirect
+(async()=>{
+  try {
+    // Handle the email confirmation token in the URL hash
+    const hash = window.location.hash;
+    if(hash && hash.includes('access_token')){
+      // Supabase will handle this via onAuthStateChange
+      // Just wait a moment
+      await new Promise(r => setTimeout(r, 500));
+    }
+    const {data:{session}, error}=await SB.auth.getSession();
+    console.log('Initial session:', !!session, error);
+    if(session){
+      await initApp(session);
+    } else {
+      // Try to exchange code if present in URL
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+      if(code){
+        const {data, error:e2} = await SB.auth.exchangeCodeForSession(code);
+        if(data?.session) await initApp(data.session);
+        else showScreen('auth');
+      } else {
+        showScreen('auth');
+      }
+    }
+  } catch(e) {
+    console.error('Init error:', e);
+    showScreen('auth');
+  }
+})();
+
+</script>
+
+<script>
+window.addEventListener('load',function(){
+  setTimeout(function(){
+    var ld=document.getElementById('loading-screen');
+    if(ld&&ld.style.display!=='none'){
+      ld.innerHTML='<div style="text-align:center;padding:40px 24px;font-family:Georgia,serif"><div style="font-size:42px;margin-bottom:14px">📚</div><div style="font-size:20px;font-style:italic;color:#1a1510;margin-bottom:8px">La Pila della Vergogna</div><div style="font-size:13px;color:#b5220f;margin-bottom:20px;line-height:1.6">Errore di caricamento.<br>Controlla la connessione e ricarica.</div><button onclick="location.reload()" style="background:#b5220f;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:16px;cursor:pointer;font-family:Georgia,serif">🔄 Ricarica</button></div>';
+    }
+  },12000);
+});
+
+
+
+// ── DRAGON ──
+const DRAGON_MSGS = [
+  "VERGOGNA SU DI TE! Vergogna sulla tua famiglia! Vergogna sulla tua mucca!",
+  "Hai appena aggiunto un libro che non leggerai mai. Lo so già. Lo so.",
+  "Un altro libro nella pila. Bravo. Bravissimo. Aggiungine altri invece di leggere.",
+  "La tua pila della vergogna cresce. Il drago è deluso.",
+  "Nuovo libro? Hai finito gli ultimi dieci che hai aggiunto? No? Pensavo.",
+];
+let _dragonIdx = 0;
+
+function showDragon() {
+  const msg = DRAGON_MSGS[_dragonIdx % DRAGON_MSGS.length];
+  _dragonIdx++;
+  document.getElementById('dragon-msg').textContent = msg;
+  const ov = document.getElementById('dragon-ov');
+  ov.style.display = 'flex';
+}
+
+// ── RUOTA POPUP ──
+let _popupWheelRot = 0;
+let _popupCurrentBook = null;
+
+function openRuotaPopup() {
+  document.getElementById('ruota-ov').style.display = 'flex';
+  document.getElementById('ruota-popup-result').style.display = 'none';
+  document.getElementById('ruota-popup-spinning').style.display = 'block';
+  document.getElementById('ruota-popup-spinning').textContent = 'Premi Gira per iniziare!';
+  // Add spin button if not already there
+  if (!document.getElementById('ruota-spin-popup-btn')) {
+    const btn = document.createElement('button');
+    btn.id = 'ruota-spin-popup-btn';
+    btn.textContent = '🎲 Gira!';
+    btn.style.cssText = 'background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:"DM Serif Display",serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)';
+    btn.onclick = spinPopupWheel;
+    document.getElementById('ruota-popup-spinning').after(btn);
+  }
+}
+
+function spinPopupWheel() {
+  const tp = document.getElementById('wt').value;
+  const ln = document.getElementById('wl').value;
+  let pool = BOOKS.filter(b => b.status === 'unread' || b.status === 'reading');
+  if (tp !== 'all') pool = pool.filter(b => (b.tipo || 'libro') === tp);
+  if (ln === 'short') pool = pool.filter(b => b.pagine && b.pagine < 200);
+  if (ln === 'mid') pool = pool.filter(b => b.pagine && b.pagine >= 200 && b.pagine <= 400);
+  if (ln === 'long') pool = pool.filter(b => b.pagine && b.pagine > 400);
+
+  if (!pool.length) { toast('Nessun libro per questi filtri.', 'wn'); return; }
+
+  const w = document.getElementById('ruota-popup-wheel');
+  _popupWheelRot += 1440 + Math.random() * 720;
+  w.style.transform = 'rotate(' + _popupWheelRot + 'deg)';
+
+  const spinBtn = document.getElementById('ruota-spin-popup-btn');
+  if (spinBtn) spinBtn.style.display = 'none';
+  document.getElementById('ruota-popup-spinning').textContent = 'Girando…';
+  document.getElementById('ruota-popup-result').style.display = 'none';
+
+  const b = pool[Math.floor(Math.random() * pool.length)];
+  _popupCurrentBook = b;
+
+  setTimeout(function() {
+    const days = Math.round((Date.now() - new Date(b.added_at).getTime()) / 86400000);
+    document.getElementById('ruota-popup-book').textContent = b.title;
+    document.getElementById('ruota-popup-author').textContent = b.author || '—';
+    const reasons = [];
+    reasons.push('📅 Nella pila da ' + days + ' giorni');
+    if (b.pagine) reasons.push('📖 ~' + Math.round(b.pagine/30) + ' ore di lettura stimate');
+    if (b.serie) reasons.push('📚 Serie: ' + b.serie);
+    reasons.push(b.status === 'reading' ? '⚡ Già iniziato — finiscilo!' : '✨ Ancora tutto da scoprire');
+    document.getElementById('ruota-popup-reasons').innerHTML = reasons.join('<br>');
+    document.getElementById('ruota-accept-btn').onclick = function() { acceptPopupWheel(b.id); };
+    document.getElementById('ruota-popup-spinning').textContent = '';
+    document.getElementById('ruota-popup-result').style.display = 'block';
+    if (spinBtn) { spinBtn.textContent = '↺ Rigira'; spinBtn.style.display = 'inline-block'; }
+  }, 3300);
+}
+
+async function acceptPopupWheel(id) {
+  await accWheel(id);
+  document.getElementById('ruota-ov').style.display = 'none';
+}
+
+
+// ── GENRE TAGS ──
+function getUsedGenres() {
+  const genres = {};
+  BOOKS.forEach(b => {
+    if (b.genere) b.genere.split(',').forEach(g => {
+      g = g.trim();
+      if (g) genres[g] = (genres[g] || 0) + 1;
+    });
+  });
+  return Object.entries(genres).sort((a,b) => b[1]-a[1]).map(e => e[0]);
+}
+
+function getUsedTipi() {
+  const base = ['libro','manga','fumetto','graphic novel','comic','light novel','webtoon','artbook'];
+  const custom = {};
+  BOOKS.forEach(b => { if(b.tipo) custom[b.tipo] = true; });
+  return [...new Set([...base, ...Object.keys(custom)])];
+}
+
+function showGenreSuggestions(inputEl, containerEl) {
+  const val = inputEl.value.toLowerCase();
+  const used = getUsedGenres();
+  const filtered = val ? used.filter(g => g.toLowerCase().includes(val)) : used;
+  if (!filtered.length) { containerEl.style.display = 'none'; return; }
+  containerEl.innerHTML = filtered.slice(0,8).map(g =>
+    '<div onclick="selectGenre(\''+g+'\',\''+inputEl.id+'\',\''+containerEl.id+'\')" style="padding:7px 12px;cursor:pointer;font-size:13px;font-style:italic;border-bottom:1px solid var(--b);transition:background .15s" onmouseover="this.style.background=\'var(--p3)\'" onmouseout="this.style.background=\'\'">'+g+'</div>'
+  ).join('');
+  containerEl.style.display = 'block';
+}
+
+function selectGenre(g, inputId, containerId) {
+  document.getElementById(inputId).value = g;
+  document.getElementById(containerId).style.display = 'none';
+}
+
+function populateTipoSelect(selectEl) {
+  const current = selectEl.value;
+  const tipi = getUsedTipi();
+  selectEl.innerHTML = tipi.map(t =>
+    '<option value="'+t+'" '+(t===current?'selected':'')+'>'+t.charAt(0).toUpperCase()+t.slice(1)+'</option>'
+  ).join('');
+  // Add custom option
+  selectEl.innerHTML += '<option value="__custom__">+ Aggiungi tipo…</option>';
+}
+
+// ── BETTER SEARCH (Google Books) ──
+async function doSearch() {
+  const q = document.getElementById('sq').value.trim();
+  if (!q) return;
+  const sl = document.getElementById('sl');
+  const sr = document.getElementById('sr');
+  sl.style.display = 'block';
+  sl.textContent = '🤖 Cerco informazioni…';
+  sr.className = 'sres';
+  sr.innerHTML = '';
+  try {
+    const prompt = "Sei un assistente bibliotecario. L'utente cerca: \"" + q + "\"\n\nTrova fino a 5 libri corrispondenti. Rispondi SOLO con un array JSON valido, nessun testo prima o dopo:\n[{\"title\":\"...\",\"author\":\"...\",\"year\":\"...\",\"pages\":300,\"genre\":\"...\",\"tipo\":\"libro\",\"description\":\"...\"}]\n\nRegole:\n- tipo puo essere: libro, manga, fumetto, graphic novel\n- pages e un numero intero\n- year e una stringa es. \"1965\"\n- genre in italiano\n- description max 80 caratteri in italiano\n- Se non trovi risultati ritorna []";
+    const r = await callAI(prompt);
+    const d = await r.json();
+    sl.style.display = 'none';
+    const text = (d.content || []).map(function(c){return c.text||'';}).join('');
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) { sr.innerHTML = '<div style="padding:14px;font-style:italic;color:var(--ink3);font-size:13px">Nessun risultato trovato.</div>'; sr.classList.add('on'); return; }
+    const items = JSON.parse(jsonMatch[0]);
+    if (!items.length) { sr.innerHTML = '<div style="padding:14px;font-style:italic;color:var(--ink3);font-size:13px">Nessun risultato.</div>'; sr.classList.add('on'); return; }
+    sr.innerHTML = items.map(function(it) {
+      var bookData = {title: it.title, author: it.author, pagine: it.pages, anno: it.year, genere: it.genre, tipo: it.tipo||'libro'};
+      var dataStr = JSON.stringify(bookData).replace(/"/g, '&quot;');
+      return '<div class="sri" onclick="addBook(JSON.parse(this.dataset.book))" data-book="' + dataStr + '">' +
+        '<div style="width:30px;height:44px;flex-shrink:0;background:var(--p3);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:18px">📚</div>' +
+        '<div style="flex:1;min-width:0">' +
+        '<div style="font-family:\'DM Serif Display\',serif;font-size:13px;color:var(--ink);line-height:1.3">' + it.title + '</div>' +
+        '<div style="font-size:11px;font-style:italic;color:var(--ink3)">' + (it.author||'') + (it.year?' · '+it.year:'') + (it.pages?' · '+it.pages+'p':'') + '</div>' +
+        (it.genre ? '<div style="font-size:10px;color:var(--sage)">'+it.genre+'</div>' : '') +
+        '</div>' +
+        '<button style="flex-shrink:0;background:var(--red);color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer">+ Aggiungi</button>' +
+        '</div>';
+    }).join('');
+    sr.classList.add('on');
+  } catch(e) {
+    sl.style.display = 'none';
+    sr.innerHTML = '<div style="padding:14px;color:var(--red);font-size:13px;font-style:italic">❌ Errore: ' + e.message + '<br><small>' + e.stack + '</small></div>';
+    sr.classList.add('on');
+    console.error('doSearch error:', e);
+  }
+}
+async function addFromSearch(data) {
+  await addBook(data);
+  document.getElementById('sr').className = 'sres';
+  document.getElementById('sq').value = '';
+  toast('Aggiunto! Vai su Scaffale per vederlo 📚', 'ok');
+}
+
+// ── BETTER ISBN ──
+async function doISBN() {
+  const isbn = document.getElementById('isb').value.replace(/[^0-9X]/gi, '').trim();
+  if (!isbn) { toast('Inserisci ISBN.', 'wn'); return; }
+  const isl = document.getElementById('isl');
+  const isr = document.getElementById('isr');
+  isl.style.display = 'block';
+  isl.textContent = '🤖 Cerco il libro…';
+  isr.innerHTML = '';
+  try {
+    const prompt = "Cerca il libro con ISBN " + isbn + ".\nRispondi SOLO con un oggetto JSON valido, nessun testo prima o dopo:\n{\"title\":\"...\",\"author\":\"...\",\"year\":\"...\",\"pages\":300,\"genre\":\"...\",\"tipo\":\"libro\",\"description\":\"...\"}\n\nSe non lo trovi rispondi con: {\"notfound\":true}\ngenre in italiano, tipo puo essere libro/manga/fumetto/graphic novel, description max 80 caratteri.";
+    const r = await callAI(prompt);
+    const d = await r.json();
+    isl.style.display = 'none';
+    const text = (d.content || []).map(function(c){return c.text||'';}).join('');
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) { isr.innerHTML = '<div style="padding:9px 0;font-style:italic;color:var(--ink3);font-size:13px">ISBN non trovato. Prova la ricerca per titolo.</div>'; return; }
+    const it = JSON.parse(jsonMatch[0]);
+    if (it.notfound) { isr.innerHTML = '<div style="padding:9px 0;font-style:italic;color:var(--ink3);font-size:13px">ISBN non trovato. Prova la ricerca per titolo.</div>'; return; }
+    const data = {title: it.title, author: it.author, pagine: it.pages, anno: it.year, genere: it.genre, tipo: it.tipo||'libro'};
+    var dataStr = JSON.stringify(data).replace(/"/g, '&quot;');
+    isr.innerHTML =
+      '<div style="margin-top:11px;background:var(--p2);border:1.5px solid var(--b);border-radius:8px;padding:14px;display:flex;gap:12px;align-items:flex-start">' +
+      '<div style="width:55px;height:80px;background:var(--p3);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">📚</div>' +
+      '<div style="flex:1">' +
+      '<div style="font-family:\'DM Serif Display\',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:3px">' + it.title + '</div>' +
+      '<div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:4px">' + (it.author||'') + (it.year?' · '+it.year:'') + (it.pages?' · '+it.pages+' pag.':'') + '</div>' +
+      (it.genre ? '<div style="font-size:11px;color:var(--sage);margin-bottom:8px">'+it.genre+'</div>' : '') +
+      (it.description ? '<div style="font-size:11px;font-style:italic;color:var(--ink3);margin-bottom:10px">'+it.description+'</div>' : '') +
+      '<button id="isbn-add-btn" data-book="' + dataStr + '" style="background:var(--red);color:#fff;border:none;border-radius:5px;padding:8px 16px;font-family:\'DM Serif Display\',serif;font-size:14px;font-style:italic;cursor:pointer">➕ Aggiungi alla pila</button>' +
+      '</div></div>';
+    document.getElementById('isbn-add-btn').onclick = function() { addBook(JSON.parse(this.dataset.book.replace(/&quot;/g,'"'))); };
+  } catch(e) {
+    isl.style.display = 'none';
+    isr.innerHTML = '<div style="padding:9px 0;font-style:italic;color:var(--ink3);font-size:13px">Errore: ' + e.message + '</div>';
+  }
+}
+</script>
+
+<div id="dragon-ov" style="display:none;position:fixed;inset:0;background:rgba(26,21,16,.7);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--p);border-radius:16px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:fu .4s ease both;position:relative;">
+    <button onclick="document.getElementById('dragon-ov').style.display='none'" style="position:absolute;top:10px;right:14px;background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">✕</button>
+    <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:107px;display:block;margin:0 auto 8px">
+  <ellipse cx="60" cy="110" rx="22" ry="30" fill="#cc2200"/>
+  <ellipse cx="60" cy="110" rx="16" ry="28" fill="#e03318"/>
+  <ellipse cx="60" cy="105" rx="12" ry="22" fill="#f5a080" opacity="0.7"/>
+  <path d="M78 130 Q100 145 95 160 Q85 155 82 140Z" fill="#cc2200"/>
+  <path d="M42 130 Q20 145 25 160 Q35 155 38 140Z" fill="#b01c00"/>
+  <ellipse cx="60" cy="82" rx="14" ry="18" fill="#cc2200"/>
+  <ellipse cx="60" cy="58" rx="22" ry="20" fill="#dd2800"/>
+  <ellipse cx="60" cy="66" rx="14" ry="10" fill="#cc2200"/>
+  <ellipse cx="60" cy="68" rx="10" ry="7" fill="#e03318"/>
+  <ellipse cx="55" cy="70" rx="2.5" ry="1.5" fill="#880000"/>
+  <ellipse cx="65" cy="70" rx="2.5" ry="1.5" fill="#880000"/>
+  <ellipse cx="50" cy="54" rx="6" ry="5" fill="#fff"/>
+  <ellipse cx="70" cy="54" rx="6" ry="5" fill="#fff"/>
+  <ellipse cx="51" cy="54" rx="3.5" ry="3.5" fill="#222"/>
+  <ellipse cx="71" cy="54" rx="3.5" ry="3.5" fill="#222"/>
+  <ellipse cx="52" cy="53" rx="1.2" ry="1.2" fill="#fff"/>
+  <ellipse cx="72" cy="53" rx="1.2" ry="1.2" fill="#fff"/>
+  <line x1="44" y1="49" x2="56" y2="51" stroke="#880000" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="64" y1="51" x2="76" y2="49" stroke="#880000" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M46 63 Q30 58 20 62" stroke="#ffcc00" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M46 67 Q28 65 18 70" stroke="#ffcc00" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M74 63 Q90 58 100 62" stroke="#ffcc00" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M74 67 Q92 65 102 70" stroke="#ffcc00" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M48 42 Q42 25 46 18 Q50 28 52 38Z" fill="#ffcc00"/>
+  <path d="M72 42 Q78 25 74 18 Q70 28 68 38Z" fill="#ffcc00"/>
+  <path d="M38 55 Q30 48 34 42 Q40 50 42 56Z" fill="#aa1800"/>
+  <path d="M82 55 Q90 48 86 42 Q80 50 78 56Z" fill="#aa1800"/>
+  <path d="M40 95 Q22 88 18 100 Q28 102 38 100Z" fill="#cc2200"/>
+  <path d="M80 95 Q98 88 102 100 Q92 102 82 100Z" fill="#cc2200"/>
+  <path d="M18 100 Q12 98 10 104" stroke="#ffcc00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M18 100 Q13 104 14 110" stroke="#ffcc00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M102 100 Q108 98 110 104" stroke="#ffcc00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M102 100 Q107 104 106 110" stroke="#ffcc00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M50 82 Q48 70 52 65 Q54 74 56 82Z" fill="#ff4400" opacity="0.8"/>
+  <path d="M60 78 Q58 65 62 60 Q64 70 66 78Z" fill="#ff4400" opacity="0.8"/>
+  <path d="M70 82 Q68 70 72 65 Q74 74 76 82Z" fill="#ff4400" opacity="0.8"/>
+  <path d="M60 74 Q55 82 50 86 Q57 80 60 88 Q63 80 70 86 Q65 82 60 74Z" fill="#ffaa00" opacity="0.9"/>
+</svg>
+    <div id="dragon-msg" style="font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;color:var(--ink);line-height:1.4;margin-bottom:6px"></div>
+    <div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:16px">— Mushu, drago della vergogna</div>
+    <button onclick="document.getElementById('dragon-ov').style.display='none'" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;cursor:pointer">Ok ok, vado a leggere 📚</button>
+  </div>
+</div>
+
+<div id="ruota-ov" style="display:none;position:fixed;inset:0;background:rgba(26,21,16,.65);z-index:400;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--p);border-radius:16px;padding:28px 24px;max-width:380px;width:92%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:fu .35s ease both;">
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;font-style:italic;color:var(--ink);margin-bottom:4px">🎡 La Ruota Decide</div>
+    <div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:20px">il destino ha parlato</div>
+    <div style="position:relative;width:180px;height:180px;margin:0 auto 20px;">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--red);z-index:5"></div>
+      <div id="ruota-popup-wheel" style="width:180px;height:180px;border-radius:50%;border:4px solid var(--b2);background:conic-gradient(#9e2a1a 0deg 45deg,#1e3d6e 45deg 90deg,#1e5030 90deg 135deg,#5a2878 135deg 180deg,#7a5218 180deg 225deg,#5a1e38 225deg 270deg,#1e5858 270deg 315deg,#6e3018 315deg 360deg);transition:transform 3s cubic-bezier(.17,.67,.12,.99);position:relative;">
+        <div style="position:absolute;inset:35%;border-radius:50%;background:var(--p);border:3px solid var(--b2)"></div>
+      </div>
+    </div>
+    <div id="ruota-popup-result" style="display:none;animation:fu .4s ease both;">
+      <div id="ruota-popup-book" style="font-family:'DM Serif Display',serif;font-size:20px;font-style:italic;color:var(--ink);margin-bottom:4px"></div>
+      <div id="ruota-popup-author" style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:14px"></div>
+      <div id="ruota-popup-reasons" style="font-size:13px;font-style:italic;color:var(--ink2);margin-bottom:16px;line-height:1.6;text-align:left;background:var(--p2);border-radius:8px;padding:10px 14px;"></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button id="ruota-accept-btn" style="background:var(--sage);color:#fff;border:none;border-radius:6px;padding:9px 20px;font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;cursor:pointer">✓ Accetto la sfida</button>
+        <button onclick="spinPopupWheel()" style="background:transparent;border:1.5px solid var(--b);color:var(--ink2);border-radius:6px;padding:9px 16px;font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;cursor:pointer">↺ Rigira</button>
+        <button onclick="document.getElementById('ruota-ov').style.display='none'" style="background:transparent;border:1.5px solid var(--b);color:var(--ink3);border-radius:6px;padding:9px 16px;font-size:13px;font-style:italic;cursor:pointer">Chiudi</button>
+      </div>
+    </div>
+    <div id="ruota-popup-spinning" style="font-size:14px;font-style:italic;color:var(--ink3)">Premi Gira!</div>
+    <button id="ruota-spin-popup-btn" onclick="spinPopupWheel()" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)">🎲 Gira!</button>
+  </div>
+</div>
+</body>
+</html>
