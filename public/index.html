@@ -1045,8 +1045,10 @@ async function addBook(d){
   if(xpDelta!==0){
     await updateXP(xpDelta);
     toast(xpDelta<0?`📚 «${inserted.title}» aggiunto — ${xpDelta} XP (vecchio acquisto!)`:(`📚 «${inserted.title}» aggiunto! Acquisto recente, no penalità.`),'ok');
+  setTimeout(showDragon, 600);
   } else {
     toast(`📚 «${inserted.title}» aggiunto!`,'ok');
+  setTimeout(showDragon, 600);
   }
   await logActivity('added_book',{title:inserted.title,tipo:inserted.tipo});
   await checkMissions();
@@ -1425,23 +1427,45 @@ async function sc(){
   const q=document.getElementById('cinp').value.trim();if(!q)return;
   const un=BOOKS.filter(b=>b.status!=='done');if(!un.length){toast('Aggiungi libri per il Coach!','wn');return;}
   document.getElementById('cld').style.display='block';document.getElementById('cresp').classList.remove('on');
-  const bl=un.slice(0,30).map(b=>`"${b.title}"${b.author?' di '+b.author:''}${b.pagine?' ('+b.pagine+'p)':''}${b.genere?' ['+b.genere+']':''}${b.tipo!=='libro'?' ['+b.tipo+']':''}`).join('\n');
-  const pr=`Sei Il Bibliotecario di "La Pila della Vergogna". Consiglia SOLO libri presenti nella pila. Mai nuovi acquisti.\n\nPila:\n${bl}\n\nUtente: "${q}"\n\nRispondi in italiano, tono caldo e ironico, max 3 frasi. Consiglia 1-3 libri: **Titolo** — motivo.`;
-  try{
-    const r=await callAI(pr);
-    const d=await r.json();const txt=(d.content||[]).map(c=>c.text||'').join('');
+  setTimeout(function(){
     document.getElementById('cld').style.display='none';
-    document.getElementById('crtext').innerHTML=txt.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-    const pills=[...txt.matchAll(/\*\*([^*]+)\*\*/g)].map(m=>m[1]);
-    document.getElementById('crbooks').innerHTML=pills.map(p=>`<span class="cpill" onclick="openByTitle('${p.replace(/'/g,"\\'")}')">📖 ${p}</span>`).join('');
+    // Smart local recommendations based on query
+    const ql=q.toLowerCase();
+    let pool=[...un];
+    // Filter by type
+    if(ql.includes('manga'))pool=pool.filter(b=>b.tipo==='manga')||pool;
+    if(ql.includes('fumett'))pool=pool.filter(b=>b.tipo==='fumetto')||pool;
+    // Filter by length
+    if(ql.includes('breve')||ql.includes('corto')||ql.includes('veloce')||ql.includes('weekend'))
+      pool=pool.filter(b=>!b.pagine||b.pagine<300).length?pool.filter(b=>!b.pagine||b.pagine<300):un;
+    if(ql.includes('lungo')||ql.includes('epico'))
+      pool=pool.filter(b=>b.pagine&&b.pagine>400).length?pool.filter(b=>b.pagine&&b.pagine>400):un;
+    // Pick oldest unread for "cosa aspetta da più tempo"
+    if(ql.includes('aspetta')||ql.includes('tempo'))
+      pool=[...un].sort((a,b)=>new Date(a.added_at)-new Date(b.added_at));
+    // Pick currently reading
+    if(ql.includes('inizia')||ql.includes('in corso'))
+      pool=BOOKS.filter(b=>b.status==='reading').length?BOOKS.filter(b=>b.status==='reading'):un;
+    // Pick up to 3 random from pool
+    const picks=[];const used=new Set();
+    const n=Math.min(3,pool.length);
+    while(picks.length<n){
+      const idx=Math.floor(Math.random()*pool.length);
+      if(!used.has(idx)){used.add(idx);picks.push(pool[idx]);}
+    }
+    const intros=['Ah, guardando la tua pila…','Ho esaminato i tuoi scaffali virtuali…','La risposta è già lì, tra i tuoi libri…'];
+    const intro=intros[Math.floor(Math.random()*intros.length)];
+    const reasons={
+      default:['aspetta da un po' — è ora di aprirlo!','sembra perfetto per quello che cerchi.','è rimasto troppo a lungo nella pila.'],
+      breve:['è breve e si legge in poco tempo.','non richiede un grande impegno.','puoi finirlo in un weekend.'],
+      lungo:['è una lettura impegnativa ma ne vale la pena.','ti terrà compagnia a lungo.','è perfetto per immergersi.'],
+    };
+    const rArr=ql.includes('breve')||ql.includes('weekend')?reasons.breve:ql.includes('lungo')?reasons.lungo:reasons.default;
+    const txt=intro+'<br><br>'+picks.map((b,i)=>`<strong>${b.title}</strong>${b.author?' di '+b.author:''} — ${rArr[i%rArr.length]}`).join('<br>');
+    document.getElementById('crtext').innerHTML=txt;
+    document.getElementById('crbooks').innerHTML=picks.map(b=>`<span class="cpill" onclick="openByTitle('${b.title.replace(/'/g,"\\'")}')">📖 ${b.title}</span>`).join('');
     document.getElementById('cresp').classList.add('on');
-  }catch(e){
-    document.getElementById('cld').style.display='none';
-    const b=un[Math.floor(Math.random()*un.length)];
-    document.getElementById('crtext').innerHTML=`Connessione non disponibile. Ti consiglio comunque: <strong>${b.title}</strong> — è lì che aspetta. 😏`;
-    document.getElementById('crbooks').innerHTML=`<span class="cpill">📖 ${b.title}</span>`;
-    document.getElementById('cresp').classList.add('on');
-  }
+  },800);
 }
 function openByTitle(t){const b=BOOKS.find(x=>x.title.toLowerCase().includes(t.toLowerCase()));if(b)openBK(b.id);}
 
