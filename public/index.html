@@ -396,7 +396,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
         </div>
       </div>
       <div class="sh">La pila <span class="sh-s" id="cnt">—</span></div>
-      class="bfilt">
+      <div class="bfilt">
         <select class="fsel" id="fs" onchange="renderList()"><option value="all">Tutti gli stati</option><option value="unread">Non letti</option><option value="reading">In lettura</option><option value="done">Completati</option></select>
         <select class="fsel" id="ft" onchange="renderList()"><option value="all">Tutti i tipi</option><option value="libro">Libri</option><option value="manga">Manga</option><option value="fumetto">Fumetti</option></select>
         <select class="fsel" id="fg2" onchange="renderList()"><option value="all">Tutti i generi</option></select>
@@ -405,6 +405,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       </div>
       <div class="bggrid" id="bgrid"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
     </div>
+  </div><!-- /pg-scaffale -->
 
     <!-- INSERISCI -->
     <div class="page" id="pg-inserisci">
