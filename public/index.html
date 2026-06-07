@@ -1307,7 +1307,9 @@ async function loadFriends(){
       const init=(f.display_name||'?').charAt(0).toUpperCase();
       const colors=['#9e2a1a','#1e3d6e','#1e5030','#5a2878','#7a5218'];
       const col=colors[Math.abs(hs(f.id))%colors.length];
-      rows.push('<div class="fc"><div class="fca" style="background:'+col+'">'+init+'</div><div class="fci"><div class="fcn">'+f.display_name+'</div><div class="fch">@'+f.username+'</div><div class="fcs"><div class="fcst"><strong>'+((fBooks||[]).length)+'</strong> libri</div><div class="fcst"><strong>'+fDone+'</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>'+fUnread+'</strong> pila</div></div>'+(common.length?'<div style="margin-top:5px;font-size:11px;font-style:italic;color:var(--sage)">'+common.length+' libri in comune</div>':'')+'</div><div class="fca2"><button class="btn br bsm" onclick="proponi(''+f.display_name+'',''+f.id+'')">📖 Proponi</button></div></div>');
+      var fName=f.display_name.replace(/'/g,"&#39;");
+      var fId=f.id;
+      rows.push('<div class="fc"><div class="fca" style="background:'+col+'">'+init+'</div><div class="fci"><div class="fcn">'+f.display_name+'</div><div class="fch">@'+f.username+'</div><div class="fcs"><div class="fcst"><strong>'+((fBooks||[]).length)+'</strong> libri</div><div class="fcst"><strong>'+fDone+'</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>'+fUnread+'</strong> pila</div></div>'+(common.length?'<div style="margin-top:5px;font-size:11px;color:var(--sage)">'+common.length+' libri in comune</div>':'')+'</div><div class="fca2"><button class="btn br bsm" onclick="proponi(&#39;'+fName+'&#39;,&#39;'+fId+'&#39;)">📖 Proponi</button></div></div>');
     }
     fl.innerHTML=rows.join('');
   }
@@ -1321,7 +1323,8 @@ async function loadFriends(){
     for(const p of (pending||[])){
       const {data:sender}=await SB.from('profiles').select('id,username,display_name').eq('id',p.user_id).single();
       const init=(sender?.display_name||'?').charAt(0).toUpperCase();
-      pendingRows.push('<div class="fc" style="align-items:center"><div class="fca" style="background:#5a2878;width:34px;height:34px;font-size:14px">'+init+'</div><div class="fci"><div class="fcn" style="font-size:14px">'+(sender?.display_name||'?')+'</div><div class="fch">@'+(sender?.username||'?')+'</div></div><div class="fca2"><button class="btn bs bsm" onclick="acceptFriend(''+p.id+'')">✓ Accetta</button><button class="btn bg bsm" onclick="rejectFriend(''+p.id+'')">✕</button></div></div>');
+      var pid=p.id;
+      pendingRows.push('<div class="fc" style="align-items:center"><div class="fca" style="background:#5a2878;width:34px;height:34px;font-size:14px">'+init+'</div><div class="fci"><div class="fcn" style="font-size:14px">'+(sender?.display_name||'?')+'</div><div class="fch">@'+(sender?.username||'?')+'</div></div><div class="fca2"><button class="btn bs bsm" onclick="acceptFriend(&#39;'+pid+'&#39;)">✓ Accetta</button><button class="btn bg bsm" onclick="rejectFriend(&#39;'+pid+'&#39;)">✕</button></div></div>');
     }
     document.getElementById('pending-list').innerHTML=pendingRows.join('');
   }
