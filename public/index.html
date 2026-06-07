@@ -351,10 +351,10 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       </div>
       <div class="psub" id="scaffale-sub">Cosa stai ignorando oggi?</div>
       <div class="srow">
-        <div class="sc sr"><div class="sn" id="s-tot">—</div><div class="sl">possedute</div></div>
-        <div class="sc sk"><div class="sn" id="s-unr">—</div><div class="sl">non lette</div><div class="ss" id="s-pct"></div></div>
-        <div class="sc sg"><div class="sn" id="s-dn">—</div><div class="sl">completate</div></div>
-        <div class="sc so"><div class="sn" id="s-rd">—</div><div class="sl">in lettura</div></div>
+        <div class="sc sr" onclick="filterStat('all')" style="cursor:pointer"><div class="sn" id="s-tot">—</div><div class="sl">possedute</div></div>
+        <div class="sc sk" onclick="filterStat('unread')" style="cursor:pointer"><div class="sn" id="s-unr">—</div><div class="sl">non lette</div><div class="ss" id="s-pct"></div></div>
+        <div class="sc sg" onclick="filterStat('done')" style="cursor:pointer"><div class="sn" id="s-dn">—</div><div class="sl">completate</div></div>
+        <div class="sc so" onclick="filterStat('reading')" style="cursor:pointer"><div class="sn" id="s-rd">—</div><div class="sl">in lettura</div></div>
       </div>
       <div class="xpp">
         <div class="xplv"><div class="xpn" id="xp-n">1</div><div class="xpt">Lv</div></div>
@@ -907,24 +907,31 @@ let USER = null;
 let PROFILE = null;
 let BOOKS = [];
 let MISSIONS_DEF = [
-  {key:'first_book',ty:'Speciale',ti:'Finisci il tuo primo libro',xp:100,tg:1},
-  {key:'read_20min',ty:'Giornaliera',ti:'Leggi 20 minuti oggi',xp:50,tg:1,ac:'timer'},
-  {key:'complete_5',ty:'Speciale',ti:'Completa 5 opere',xp:200,tg:5},
-  {key:'complete_10',ty:'Speciale',ti:'Pulizia Profonda — completa 10 opere',xp:300,tg:10},
+  {key:'first_book',ty:'Speciale',ti:'Finisci il tuo primo libro',xp:20,tg:1},
+  {key:'read_20min',ty:'Giornaliera',ti:'Leggi 20 minuti oggi',xp:10,tg:1,ac:'timer'},
+  {key:'streak_3',ty:'Streak 🔥',ti:'Leggi 3 giorni di fila',xp:15,tg:3},
+  {key:'streak_7',ty:'Streak 🔥🔥',ti:'Leggi 7 giorni di fila',xp:50,tg:7},
+  {key:'complete_5',ty:'Speciale',ti:'Completa 5 opere',xp:40,tg:5},
+  {key:'complete_10',ty:'Speciale',ti:'Pulizia Profonda — completa 10 opere',xp:80,tg:10},
   {key:'read_manga',ty:'Speciale',ti:'Completa un manga o fumetto',xp:100,tg:1},
   {key:'finish_series',ty:'Saga',ti:'Finisci tutta una serie',xp:250,tg:1},
-  {key:'oldest_book',ty:'Speciale 🔥',ti:'Finisci il libro più vecchio della pila',xp:300,tg:1},
-  {key:'zero_pile',ty:'LEGGENDA',ti:'Azzera la pila della vergogna!',xp:1000,tg:1},
+  {key:'oldest_book',ty:'Speciale 🔥',ti:'Finisci il libro più vecchio della pila',xp:80,tg:1},
+  {key:'zero_pile',ty:'LEGGENDA',ti:'Azzera la pila della vergogna!',xp:500,tg:1},
 ];
 
 const SC=['b1','b2','b3','b4','b5','b6','b7','b8','bm1','bm2','bm3','bf1'];
-const LV=[{n:'Accumulatore',x:0},{n:'Acquirente Compulsivo',x:100},{n:'Aspirante Lettore',x:300},{n:'Cacciatore di Segnalibri',x:600},{n:'Svuota Scaffali',x:1000},{n:'Distruttore di Backlog',x:1600},{n:'Maestro della Pila',x:2400},{n:'Leggenda della Vergogna',x:3600}];
+const LV_NAMES=['Accumulatore','Acquirente Compulsivo','Aspirante Lettore','Divoratore di Pagine','Cacciatore di Segnalibri','Svuota Scaffali','Distruttore di Backlog','Maestro della Pila','Grande Bibliotecario','Leggenda della Vergogna'];
+function getLevels(){const total=Math.max(BOOKS.length,10)*XP_COMPLETE;return LV_NAMES.map((n,i)=>({n,x:i===0?0:Math.round(total*(i/LV_NAMES.length))}));}
+const LV=getLevels();
 
 // XP RULES — nuovi libri tolgono punti se più vecchi di 6 mesi
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+const XP_COMPLETE = 20;
+const XP_START = 5;
+const XP_OLD_BOOK = -5;
 function xpForAddBook(addedAt) {
   const age = Date.now() - new Date(addedAt).getTime();
-  return age > SIX_MONTHS_MS ? -15 : 0; // vecchio: -15 XP; recente: 0
+  return age > SIX_MONTHS_MS ? XP_OLD_BOOK : 0; // vecchio: -15 XP; recente: 0
 }
 
 // ═══ UTILS ═══
@@ -1017,6 +1024,7 @@ async function initApp(session){
   document.getElementById('pname').textContent=PROFILE?.display_name||'';
   document.getElementById('phandle').textContent='@'+(PROFILE?.username||'');
   document.getElementById('dc-av').textContent=init;
+  setTimeout(updateAvatarBadge,100);
   document.querySelectorAll('#me1,#me2').forEach(el=>{if(el)el.textContent=init;});
   showScreen('app');
   await loadBooks();
@@ -1045,9 +1053,11 @@ async function addBook(d){
   if(xpDelta!==0){
     await updateXP(xpDelta);
     toast(xpDelta<0?`📚 «${inserted.title}» aggiunto — ${xpDelta} XP (vecchio acquisto!)`:(`📚 «${inserted.title}» aggiunto! Acquisto recente, no penalità.`),'ok');
+  setTimeout(showDragon,500);
   setTimeout(showDragon, 600);
   } else {
     toast(`📚 «${inserted.title}» aggiunto!`,'ok');
+  setTimeout(showDragon,500);
   setTimeout(showDragon, 600);
   }
   await logActivity('added_book',{title:inserted.title,tipo:inserted.tipo});
@@ -1084,12 +1094,12 @@ async function updateXP(delta){
 
 function updXP(){
   const x=PROFILE?.xp||0;
-  let lv=0;for(let i=0;i<LV.length;i++)if(x>=LV[i].x)lv=i;
-  const nx=lv<LV.length-1?LV[lv+1]:null;
+  const lvs=getLevels();let lv=0;for(let i=0;i<lvs.length;i++)if(x>=lvs[i].x)lv=i;
+  const nx=lv<lvs.length-1?lvs[lv+1]:null;
   const pct=nx?Math.min(100,Math.round((x-LV[lv].x)/(nx.x-LV[lv].x)*100)):100;
   document.getElementById('xp-n').textContent=lv+1;
-  document.getElementById('xp-name').textContent=LV[lv].n;
-  document.getElementById('xp-sub').textContent=x+' XP'+(nx?' / '+nx.x+' → '+nx.n:'— Max!');
+  document.getElementById('xp-name').textContent=lvs[lv].n;
+  document.getElementById('xp-sub').textContent=x+' XP'+(nx?' → '+nx.x+' XP ('+nx.n+')':' — Leggenda!');
   document.getElementById('xp-fill').style.width=pct+'%';
   const dn=BOOKS.filter(b=>b.status==='done').length;
   if(dn>=1)document.getElementById('b1').classList.remove('lk');
@@ -1164,10 +1174,10 @@ async function saveBK(){
   if(newStatus==='reading'&&oldStatus!=='reading')updates.started_at=new Date().toISOString();
   if(newStatus==='done'&&oldStatus!=='done'){updates.finished_at=new Date().toISOString();}
   await saveBook(CUR,updates);
-  if(oldStatus!=='reading'&&newStatus==='reading'){await updateXP(20);toast('+20 XP — Iniziata la lettura! 📖','ok');}
+  if(oldStatus!=='reading'&&newStatus==='reading'){await updateXP(XP_START);toast('+'+XP_START+' XP — Iniziata la lettura! 📖','ok');}
   if(oldStatus!=='done'&&newStatus==='done'){
-    await updateXP(100);
-    toast('+100 XP — Libro completato! 🎉','ok');
+    await updateXP(XP_COMPLETE);
+    toast('+'+XP_COMPLETE+' XP — Libro completato! 🎉','ok');
     await logActivity('completed_book',{title:b.title});
     await checkMissions();
   }
@@ -1274,40 +1284,66 @@ async function logActivity(type,payload){
 // ═══ FRIENDS ═══
 async function loadFriends(){
   if(!USER)return;
-  // Load accepted friendships
-  const {data:fships}=await SB.from('friendships').select('*,profiles!friendships_friend_id_fkey(id,username,display_name,xp),profiles!friendships_user_id_fkey(id,username,display_name,xp)').eq('status','accepted').or(`user_id.eq.${USER.id},friend_id.eq.${USER.id}`);
-  const friends=(fships||[]).map(f=>{const isMe=f.user_id===USER.id;return isMe?f['profiles!friendships_friend_id_fkey']:f['profiles!friendships_user_id_fkey'];}).filter(Boolean);
+  const {data:fships}=await SB.from('friendships').select('*').eq('status','accepted');
+  const myFships=(fships||[]).filter(f=>f.user_id===USER.id||f.friend_id===USER.id);
+  const friendIds=myFships.map(f=>f.user_id===USER.id?f.friend_id:f.user_id);
+  let friends=[];
+  for(const fid of friendIds){
+    const {data:p}=await SB.from('profiles').select('id,username,display_name,xp').eq('id',fid).single();
+    if(p)friends.push(p);
+  }
   document.getElementById('friends-count').textContent=friends.length+' amiche';
   const fl=document.getElementById('friends-list');
-  if(!friends.length){fl.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessuna amica ancora. Cerca per username!</div>';return;}
-  fl.innerHTML=await Promise.all(friends.map(async f=>{
-    const {data:fBooks}=await SB.from('books').select('id,status,tipo').eq('user_id',f.id);
-    const fDone=(fBooks||[]).filter(b=>b.status==='done').length;
-    const fUnread=(fBooks||[]).filter(b=>b.status==='unread').length;
-    const myTitles=new Set(BOOKS.map(b=>b.title.toLowerCase()));
-    const {data:fBooksFull}=await SB.from('books').select('title,tipo').eq('user_id',f.id);
-    const common=(fBooksFull||[]).filter(b=>myTitles.has(b.title.toLowerCase()));
-    const init=(f.display_name||'?').charAt(0).toUpperCase();
-    const colors=['#9e2a1a','#1e3d6e','#1e5030','#5a2878','#7a5218'];
-    const col=colors[Math.abs(hs(f.id))%colors.length];
-    return`<div class="fc"><div class="fca" style="background:${col}">${init}</div><div class="fci"><div class="fcn">${f.display_name}</div><div class="fch">@${f.username}</div><div class="fcs"><div class="fcst"><strong>${(fBooks||[]).length}</strong> libri</div><div class="fcst"><strong>${fDone}</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>${fUnread}</strong> pila</div></div>${common.length?`<div style="margin-top:6px"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);opacity:.7;margin-bottom:4px">✦ ${common.length} libri in comune</div><div class="msp">${common.slice(0,5).map(b=>`<div class="ms ${spCol(b)}" style="height:40px"><div class="tt">${b.title}</div></div>`).join('')}${common.length>5?`<span style="font-size:10px;font-style:italic;color:var(--ink3);align-self:center;margin-left:4px">+${common.length-5} →</span>`:''}</div></div>`:''}</div><div class="fca2"><button class="btn br bsm" onclick="proponi('${f.display_name}','${f.id}')">📖 Proponi</button><button class="btn bg bsm" onclick="openDisc('chat-${f.id}')">💬 Chat</button></div></div>`;
-  })).then(arr=>arr.join(''));
-
-  // Load pending
-  const {data:pending}=await SB.from('friendships').select('*,profiles!friendships_user_id_fkey(id,username,display_name)').eq('friend_id',USER.id).eq('status','pending');
+  if(!friends.length){
+    fl.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessuna amica ancora. Cerca per username!</div>';
+  } else {
+    const rows=[];
+    for(const f of friends){
+      const {data:fBooks}=await SB.from('books').select('id,status,title,tipo').eq('user_id',f.id);
+      const fDone=(fBooks||[]).filter(b=>b.status==='done').length;
+      const fUnread=(fBooks||[]).filter(b=>b.status==='unread').length;
+      const myTitles=new Set(BOOKS.map(b=>(b.title||'').toLowerCase()));
+      const common=(fBooks||[]).filter(b=>myTitles.has((b.title||'').toLowerCase()));
+      const init=(f.display_name||'?').charAt(0).toUpperCase();
+      const colors=['#9e2a1a','#1e3d6e','#1e5030','#5a2878','#7a5218'];
+      const col=colors[Math.abs(hs(f.id))%colors.length];
+      rows.push('<div class="fc"><div class="fca" style="background:'+col+'">'+init+'</div><div class="fci"><div class="fcn">'+f.display_name+'</div><div class="fch">@'+f.username+'</div><div class="fcs"><div class="fcst"><strong>'+((fBooks||[]).length)+'</strong> libri</div><div class="fcst"><strong>'+fDone+'</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>'+fUnread+'</strong> pila</div></div>'+(common.length?'<div style="margin-top:5px;font-size:11px;font-style:italic;color:var(--sage)">'+common.length+' libri in comune</div>':'')+'</div><div class="fca2"><button class="btn br bsm" onclick="proponi(''+f.display_name+'',''+f.id+'')">📖 Proponi</button></div></div>');
+    }
+    fl.innerHTML=rows.join('');
+  }
+  // Load pending requests
+  const {data:pending}=await SB.from('friendships').select('*').eq('friend_id',USER.id).eq('status','pending');
   document.getElementById('pending-count').textContent=(pending?.length||0)+' in attesa';
-  document.getElementById('pending-list').innerHTML=(pending||[]).length===0?'<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessuna richiesta.</div>':(pending||[]).map(p=>{const f=p['profiles!friendships_user_id_fkey'];const init=(f?.display_name||'?').charAt(0).toUpperCase();return`<div class="fc" style="align-items:center"><div class="fca" style="background:#5a2878;width:34px;height:34px;font-size:14px">${init}</div><div class="fci"><div class="fcn" style="font-size:14px">${f?.display_name}</div><div class="fch">@${f?.username}</div></div><div class="fca2"><button class="btn bs bsm" onclick="acceptFriend('${p.id}')">✓ Accetta</button><button class="btn bg bsm" onclick="rejectFriend('${p.id}')">✕</button></div></div>`;}).join('');
-
-  // Activity feed
-  const friendIds=friends.map(f=>f.id);
+  if(!(pending||[]).length){
+    document.getElementById('pending-list').innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessuna richiesta.</div>';
+  } else {
+    const pendingRows=[];
+    for(const p of (pending||[])){
+      const {data:sender}=await SB.from('profiles').select('id,username,display_name').eq('id',p.user_id).single();
+      const init=(sender?.display_name||'?').charAt(0).toUpperCase();
+      pendingRows.push('<div class="fc" style="align-items:center"><div class="fca" style="background:#5a2878;width:34px;height:34px;font-size:14px">'+init+'</div><div class="fci"><div class="fcn" style="font-size:14px">'+(sender?.display_name||'?')+'</div><div class="fch">@'+(sender?.username||'?')+'</div></div><div class="fca2"><button class="btn bs bsm" onclick="acceptFriend(''+p.id+'')">✓ Accetta</button><button class="btn bg bsm" onclick="rejectFriend(''+p.id+'')">✕</button></div></div>');
+    }
+    document.getElementById('pending-list').innerHTML=pendingRows.join('');
+  }
+  // Feed
   if(friendIds.length){
-    const {data:acts}=await SB.from('activities').select('*,profiles(display_name)').in('user_id',friendIds).order('created_at',{ascending:false}).limit(20);
+    const acts=[];
+    for(const fid of friendIds.slice(0,5)){
+      const {data:a}=await SB.from('activities').select('*').eq('user_id',fid).order('created_at',{ascending:false}).limit(5);
+      if(a)acts.push(...a);
+    }
+    acts.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
     const icons={added_book:'📚',completed_book:'🏆',started_reading:'📖',level_up:'⬆️'};
-    const msgs={added_book:(p,a)=>`<strong>${p}</strong> ha aggiunto <em>${a.payload?.title||'un libro'}</em>`,completed_book:(p,a)=>`<strong>${p}</strong> ha completato <em>${a.payload?.title||'un libro'}</em> 🎉`,started_reading:(p,a)=>`<strong>${p}</strong> ha iniziato a leggere <em>${a.payload?.title||'un libro'}</em>`,level_up:(p,a)=>`<strong>${p}</strong> è salita di livello! ⬆️`};
-    document.getElementById('feed-list').innerHTML=(acts||[]).length?((acts||[]).map(a=>{const p=a.profiles?.display_name||'Amica';const fn=msgs[a.type];return`<div class="upd"><div class="upi">${icons[a.type]||'📌'}</div><div><div class="upt">${fn?fn(p,a):`<strong>${p}</strong> ha fatto qualcosa`}</div><div class="utm">${timeAgo(a.created_at)}</div></div></div>`;}).join('')):'<div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna attività recente.</div>';
+    const fMap={};friends.forEach(f=>fMap[f.id]=f.display_name);
+    const msgs={added_book:(p,a)=>'<strong>'+p+'</strong> ha aggiunto <em>'+(a.payload?.title||'un libro')+'</em>',
+                completed_book:(p,a)=>'<strong>'+p+'</strong> ha completato <em>'+(a.payload?.title||'un libro')+'</em> 🎉',
+                started_reading:(p,a)=>'<strong>'+p+'</strong> ha iniziato <em>'+(a.payload?.title||'un libro')+'</em>',
+                level_up:(p)=>'<strong>'+p+'</strong> è salita di livello! ⬆️'};
+    document.getElementById('feed-list').innerHTML=acts.length?acts.slice(0,15).map(a=>{const p=fMap[a.user_id]||'Amica';const fn=msgs[a.type];return'<div class="upd"><div class="upi">'+(icons[a.type]||'📌')+'</div><div><div class="upt">'+(fn?fn(p,a):p+' ha fatto qualcosa')+'</div><div class="utm">'+timeAgo(a.created_at)+'</div></div></div>';}).join(''):'<div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna attività.</div>';
+  } else {
+    document.getElementById('feed-list').innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3)">Aggiungi amiche per vedere il loro feed!</div>';
   }
 }
-
 async function addFriend(){
   const v=document.getElementById('fadd').value.trim().replace('@','');if(!v){toast('Inserisci username.','wn');return;}
   const {data:found}=await SB.from('profiles').select('id,display_name').eq('username',v).single();
@@ -1429,44 +1465,29 @@ async function sc(){
   document.getElementById('cld').style.display='block';document.getElementById('cresp').classList.remove('on');
   setTimeout(function(){
     document.getElementById('cld').style.display='none';
-    // Smart local recommendations based on query
     const ql=q.toLowerCase();
     let pool=[...un];
-    // Filter by type
-    if(ql.includes('manga'))pool=pool.filter(b=>b.tipo==='manga')||pool;
-    if(ql.includes('fumett'))pool=pool.filter(b=>b.tipo==='fumetto')||pool;
-    // Filter by length
-    if(ql.includes('breve')||ql.includes('corto')||ql.includes('veloce')||ql.includes('weekend'))
-      pool=pool.filter(b=>!b.pagine||b.pagine<300).length?pool.filter(b=>!b.pagine||b.pagine<300):un;
-    if(ql.includes('lungo')||ql.includes('epico'))
-      pool=pool.filter(b=>b.pagine&&b.pagine>400).length?pool.filter(b=>b.pagine&&b.pagine>400):un;
-    // Pick oldest unread for "cosa aspetta da più tempo"
-    if(ql.includes('aspetta')||ql.includes('tempo'))
-      pool=[...un].sort((a,b)=>new Date(a.added_at)-new Date(b.added_at));
-    // Pick currently reading
-    if(ql.includes('inizia')||ql.includes('in corso'))
-      pool=BOOKS.filter(b=>b.status==='reading').length?BOOKS.filter(b=>b.status==='reading'):un;
-    // Pick up to 3 random from pool
-    const picks=[];const used=new Set();
-    const n=Math.min(3,pool.length);
-    while(picks.length<n){
-      const idx=Math.floor(Math.random()*pool.length);
-      if(!used.has(idx)){used.add(idx);picks.push(pool[idx]);}
-    }
-    const intros=['Ah, guardando la tua pila…','Ho esaminato i tuoi scaffali virtuali…','La risposta è già lì, tra i tuoi libri…'];
+    if(ql.includes('manga'))pool=un.filter(b=>b.tipo==='manga').length?un.filter(b=>b.tipo==='manga'):un;
+    if(ql.includes('fumett'))pool=un.filter(b=>b.tipo==='fumetto').length?un.filter(b=>b.tipo==='fumetto'):un;
+    if(ql.includes('breve')||ql.includes('corto')||ql.includes('veloce')||ql.includes('weekend'))pool=un.filter(b=>!b.pagine||b.pagine<300).length?un.filter(b=>!b.pagine||b.pagine<300):un;
+    if(ql.includes('lungo')||ql.includes('epico'))pool=un.filter(b=>b.pagine&&b.pagine>400).length?un.filter(b=>b.pagine&&b.pagine>400):un;
+    if(ql.includes('aspetta')||ql.includes('tempo')||ql.includes('vecchio'))pool=[...un].sort((a,b)=>new Date(a.added_at)-new Date(b.added_at));
+    if(ql.includes('corso')||ql.includes('lettura'))pool=BOOKS.filter(b=>b.status==='reading').length?BOOKS.filter(b=>b.status==='reading'):un;
+    const picks=[];const used=new Set();const n=Math.min(3,pool.length);
+    while(picks.length<n){const i=Math.floor(Math.random()*pool.length);if(!used.has(i)){used.add(i);picks.push(pool[i]);}}
+    const intros=['Guardando la tua pila di vergogna…','Ho esaminato i tuoi scaffali…','La risposta è già lì, tra i libri che ignori…'];
+    const shortR=['è breve — finiscilo in un weekend.','meno di 300 pagine, niente scuse.','non richiede grande impegno.'];
+    const longR=['è una lettura impegnativa.','ti terrà compagnia a lungo.','perfetto per immergersi.'];
+    const defR=['aspetta da troppo tempo.','è rimasto ignorato abbastanza.','merita la tua attenzione.'];
+    const rArr=ql.includes('breve')||ql.includes('weekend')?shortR:ql.includes('lungo')?longR:defR;
     const intro=intros[Math.floor(Math.random()*intros.length)];
-    const reasons={
-      default:['aspetta da un po' — è ora di aprirlo!','sembra perfetto per quello che cerchi.','è rimasto troppo a lungo nella pila.'],
-      breve:['è breve e si legge in poco tempo.','non richiede un grande impegno.','puoi finirlo in un weekend.'],
-      lungo:['è una lettura impegnativa ma ne vale la pena.','ti terrà compagnia a lungo.','è perfetto per immergersi.'],
-    };
-    const rArr=ql.includes('breve')||ql.includes('weekend')?reasons.breve:ql.includes('lungo')?reasons.lungo:reasons.default;
-    const txt=intro+'<br><br>'+picks.map((b,i)=>`<strong>${b.title}</strong>${b.author?' di '+b.author:''} — ${rArr[i%rArr.length]}`).join('<br>');
+    const txt=intro+'<br><br>'+picks.map((b,i)=>'<strong>'+b.title+'</strong>'+(b.author?' di '+b.author:'')+' — '+rArr[i%rArr.length]).join('<br>');
     document.getElementById('crtext').innerHTML=txt;
-    document.getElementById('crbooks').innerHTML=picks.map(b=>`<span class="cpill" onclick="openByTitle('${b.title.replace(/'/g,"\\'")}')">📖 ${b.title}</span>`).join('');
+    document.getElementById('crbooks').innerHTML=picks.map(b=>'<span class="cpill" onclick="openByTitle(\'' +b.title.replace(/'/g,"\\'")+ '\')" >📖 '+b.title+'</span>').join('');
     document.getElementById('cresp').classList.add('on');
-  },800);
+  },600);
 }
+
 function openByTitle(t){const b=BOOKS.find(x=>x.title.toLowerCase().includes(t.toLowerCase()));if(b)openBK(b.id);}
 
 // ═══ MODALS CLICK OUTSIDE ═══
@@ -1748,6 +1769,22 @@ async function doISBN() {
     isl.style.display = 'none';
     isr.innerHTML = '<div style="padding:9px 0;font-style:italic;color:var(--ink3);font-size:13px">Errore: ' + e.message + '</div>';
   }
+}
+
+function filterStat(status){
+  document.getElementById('fs').value=status;
+  renderList();
+  document.getElementById('cnt').scrollIntoView({behavior:'smooth'});
+}
+
+function updateAvatarBadge(){
+  const x=PROFILE?.xp||0;
+  const lvs=getLevels();
+  let lv=0;for(let i=0;i<lvs.length;i++)if(x>=lvs[i].x)lv=i;
+  const badges=['🥚','🌱','📖','🔖','⚔️','🧹','🏛️','🌟','👑','🐉'];
+  const badge=badges[Math.min(lv,badges.length-1)];
+  const av=document.getElementById('tb-av');if(av)av.textContent=badge;
+  const pav=document.getElementById('pava');if(pav)pav.innerHTML=badge+'<br><small style="font-size:8px;opacity:.7">Lv '+(lv+1)+'</small>';
 }
 </script>
 
