@@ -1410,15 +1410,12 @@ async function loadFriends(){
 async function loadSharedReadings(friendIds) {
   const el = document.getElementById('shared-readings-list');
   
-  // Load readings where user is a member
-  const {data:memberships} = await SB.from('shared_reading_members').select('reading_id').eq('user_id',USER.id);
+  const {data:memberships} = await SB.from('shared_reading_members').select('reading_id,page_cur').eq('user_id',USER.id);
   const myReadingIds = (memberships||[]).map(m=>m.reading_id);
   
-  // Load readings created by user
   const {data:created} = await SB.from('shared_readings').select('*').eq('created_by',USER.id);
   let allReadings = [...(created||[])];
   
-  // Add readings where user is member but not creator
   for(const rid of myReadingIds) {
     if(!allReadings.find(r=>r.id===rid)) {
       const {data:r} = await SB.from('shared_readings').select('*').eq('id',rid).single();
@@ -1433,6 +1430,10 @@ async function loadSharedReadings(friendIds) {
   
   el.innerHTML = '';
   
+  // Build reading cards with completion detection
+  const activeReadings = [];
+  const completedReadings = [];
+  
   for(const r of allReadings) {
     const {data:members} = await SB.from('shared_reading_members').select('*').eq('reading_id',r.id);
     const memberProfiles = [];
@@ -1443,22 +1444,37 @@ async function loadSharedReadings(friendIds) {
     
     const myBook = BOOKS.find(b=>b.title.toLowerCase()===r.book_title.toLowerCase());
     const totalPages = myBook?.pagine || 0;
-    const isMember = myReadingIds.includes(r.id) || r.created_by === USER.id;
     const isCreator = r.created_by === USER.id;
+    const isMember = myReadingIds.includes(r.id) || isCreator;
     
+    // Check if all members finished
+    const allDone = totalPages > 0 && memberProfiles.length > 1 && memberProfiles.every(m=>m.page_cur>=totalPages);
+    
+    if(allDone) {
+      completedReadings.push({r, memberProfiles, totalPages, isCreator, isMember, allDone});
+    } else {
+      activeReadings.push({r, memberProfiles, totalPages, isCreator, isMember, allDone});
+    }
+  }
+  
+  // Render active first, then completed
+  const allSorted = [...activeReadings, ...completedReadings];
+  
+  for(const {r, memberProfiles, totalPages, isCreator, isMember, allDone} of allSorted) {
     const card = document.createElement('div');
     card.className = 'rtc';
+    if(allDone) card.style.background = 'linear-gradient(135deg,#f0f8f0,#e8f4e8)';
     
-    // Header
     const header = document.createElement('div');
     header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px';
     
     const titleDiv = document.createElement('div');
-    titleDiv.innerHTML = '<div class="rtb">'+r.book_title+'</div>'
+    titleDiv.innerHTML = (allDone?'<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--sage);margin-bottom:3px">✅ COMPLETATA INSIEME</div>':'')
+      +'<div class="rtb">'+r.book_title+'</div>'
       +(memberProfiles.length?'<div style="font-size:11px;font-style:italic;color:var(--ink3)">'+memberProfiles.map(m=>m.display_name).join(' & ')+'</div>':'');
     
     const btns = document.createElement('div');
-    btns.style.cssText = 'display:flex;gap:5px';
+    btns.style.cssText = 'display:flex;gap:5px;flex-shrink:0';
     
     if(isMember) {
       const commentBtn = document.createElement('button');
@@ -1480,7 +1496,13 @@ async function loadSharedReadings(friendIds) {
     header.appendChild(btns);
     card.appendChild(header);
     
-    // Member progress
+    if(allDone) {
+      const celebrate = document.createElement('div');
+      celebrate.style.cssText = 'text-align:center;padding:10px;font-size:13px;font-style:italic;color:var(--sage);margin-bottom:8px';
+      celebrate.textContent = '🎉 Complimenti! Avete letto questo libro insieme!';
+      card.appendChild(celebrate);
+    }
+    
     for(const m of memberProfiles) {
       const pct = totalPages ? Math.min(100, Math.round(m.page_cur/totalPages*100)) : 0;
       const isMe = m.id === USER.id;
@@ -1489,13 +1511,13 @@ async function loadSharedReadings(friendIds) {
       memberDiv.style.marginBottom = '8px';
       memberDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">'
         +'<div style="font-size:12px;font-style:italic;color:var(--ink2)">'+(isMe?'📖 Tu':'👤 '+m.display_name)+'</div>'
-        +'<div style="font-size:11px;color:var(--ink3)">p.'+m.page_cur+(totalPages?'/'+totalPages:'')+'</div>'
+        +'<div style="font-size:11px;color:var(--ink3)">p.'+m.page_cur+(totalPages?'/'+totalPages:'')+(m.page_cur>=totalPages&&totalPages?' ✅':'')+'</div>'
         +'</div>'
         +'<div style="height:5px;background:var(--p3);border-radius:3px;overflow:hidden">'
         +'<div style="height:100%;width:'+pct+'%;background:'+(isMe?'var(--sage)':'var(--gold)')+';border-radius:3px"></div>'
         +'</div>';
       
-      if(isMe) {
+      if(isMe && !allDone) {
         const updateDiv = document.createElement('div');
         updateDiv.style.cssText = 'margin-top:4px;display:flex;gap:5px;align-items:center';
         const input = document.createElement('input');
@@ -1508,8 +1530,7 @@ async function loadSharedReadings(friendIds) {
         const updateBtn = document.createElement('button');
         updateBtn.textContent = '✓';
         updateBtn.style.cssText = 'background:var(--ink);color:var(--p);border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer';
-        const mid = m.member_id;
-        const rid = r.id;
+        const mid = m.member_id, rid = r.id;
         updateBtn.addEventListener('click', function() { updateSharedPage(rid, mid); });
         updateDiv.appendChild(input);
         updateDiv.appendChild(updateBtn);
@@ -1821,21 +1842,21 @@ window.addEventListener('load',function(){
 
 
 // ── DRAGON ──
-const DRAGON_MSGS_MAIN = "VERGOGNA SU DI TE! Vergogna sulla tua famiglia! Vergogna sulla tua mucca!";
+const DRAGON_MSGS_MAIN = "DISONORE! Disonore su di te! Disonore sulla tua famiglia! Disonore sulla tua mucca!";
 const DRAGON_MSGS_ALT = [
   "Hai appena aggiunto un libro che non leggerai mai. Lo so già. Lo so.",
   "Un altro libro nella pila. Bravo. Bravissimo. Aggiungine altri invece di leggere.",
-  "La tua pila della vergogna cresce. Il drago è deluso.",
-  "Nuovo libro? Hai finito gli ultimi dieci che hai aggiunto? No? Pensavo.",
-  "Disonore. Disonore su di te. Disonore sulla tua famiglia. Disonore sulla tua mucca.",
+  "Il drago è deluso. Profondamente deluso.",
+  "Nuovo libro? Hai finito gli ultimi dieci? No? Pensavo.",
+  "Ogni libro che aggiungi è un libro che non stai leggendo. Riflettici.",
 ];
 let _dragonIdx = 0;
 
 function showDragon() {
-  // Main phrase every time, occasionally an alternative
-  const msg = (_dragonIdx % 3 === 0 || _dragonIdx === 0) 
-    ? DRAGON_MSGS_MAIN 
-    : DRAGON_MSGS_ALT[_dragonIdx % DRAGON_MSGS_ALT.length];
+  // SEMPRE disonore come prima frase, poi alterna
+  const msg = _dragonIdx === 0
+    ? DRAGON_MSGS_MAIN
+    : (_dragonIdx % 4 === 0 ? DRAGON_MSGS_MAIN : DRAGON_MSGS_ALT[(_dragonIdx-1) % DRAGON_MSGS_ALT.length]);
   _dragonIdx++;
   document.getElementById('dragon-msg').textContent = msg;
   const ov = document.getElementById('dragon-ov');
@@ -2186,12 +2207,20 @@ function resetFilters() {
 async function removeFriendById(friendId, name) {
   if(!confirm('Rimuovere '+name+' dalle amiche?')) return;
   if(!confirm('Sei sicura? Azione irreversibile.')) return;
-  const {data:fs} = await SB.from('friendships').select('id');
-  const toDelete = (fs||[]).filter(f=>(f.user_id===USER.id&&f.friend_id===friendId)||(f.friend_id===USER.id&&f.user_id===friendId));
+  // Get the friendship IDs first
+  const {data:all} = await SB.from('friendships').select('id,user_id,friend_id');
+  const toDelete = (all||[]).filter(f=>
+    (f.user_id===USER.id && f.friend_id===friendId) ||
+    (f.user_id===friendId && f.friend_id===USER.id)
+  );
+  console.log('Friendships to delete:', toDelete);
+  let ok = true;
   for(const f of toDelete) {
-    await SB.from('friendships').eq('id',f.id).delete();
+    const {error} = await SB.from('friendships').eq('id',f.id).delete();
+    if(error) { console.error('Delete error:', error); ok = false; }
   }
-  toast(name+' rimossa.','ok');
+  if(ok) toast(name+' rimossa dalle amiche.','ok');
+  else toast('Errore nella rimozione.','wn');
   loadFriends();
 }
 
