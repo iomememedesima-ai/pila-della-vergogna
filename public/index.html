@@ -359,15 +359,15 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       <div class="xpp">
         <div class="xplv"><div class="xpn" id="xp-n">1</div><div class="xpt">Lv</div></div>
         <div class="xpi">
-          <div class="xpname" id="xp-name">Accumulatore</div>
+          <div class="xpname" id="xp-name" style="cursor:pointer" onclick="showLevelLegend()" title="Vedi tutti i livelli">Accumulatore ›</div>
           <div class="xpsub" id="xp-sub">0 XP</div>
           <div class="xpbar"><div class="xpfill" id="xp-fill" style="width:0%"></div></div>
         </div>
         <div class="badges">
-          <div class="bdg lk" id="b1" title="Primo Sangue">🩸</div>
-          <div class="bdg lk" id="b2" title="Pulizia Profonda">🧹</div>
-          <div class="bdg lk" id="b3" title="Saga Slayer">⚔️</div>
-          <div class="bdg lk" id="b4" title="Centurione">🏛️</div>
+          <div class="bdg lk" id="b1" title="🩸 Primo Sangue — Completa il tuo primo libro">🩸</div>
+          <div class="bdg lk" id="b2" title="🧹 Pulizia Profonda — Completa 10 opere">🧹</div>
+          <div class="bdg lk" id="b3" title="⚔️ Saga Slayer — Finisci una serie completa">⚔️</div>
+          <div class="bdg lk" id="b4" title="🏛️ Centurione — Completa 100 opere">🏛️</div>
         </div>
       </div>
       <div class="shelf" id="shelf-wrap">
@@ -396,12 +396,12 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
         </div>
       </div>
       <div class="sh">La pila <span class="sh-s" id="cnt">—</span></div>
-      <div class="bfilt">
+      class="bfilt">
         <select class="fsel" id="fs" onchange="renderList()"><option value="all">Tutti gli stati</option><option value="unread">Non letti</option><option value="reading">In lettura</option><option value="done">Completati</option></select>
         <select class="fsel" id="ft" onchange="renderList()"><option value="all">Tutti i tipi</option><option value="libro">Libri</option><option value="manga">Manga</option><option value="fumetto">Fumetti</option></select>
-        <input class="fi" id="fq" style="max-width:130px;padding:5px 9px;font-size:13px" placeholder="Cerca titolo…" oninput="renderList()">
-        <input class="fi" id="fg2" style="max-width:110px;padding:5px 9px;font-size:13px" placeholder="Genere…" oninput="renderList()" onfocus="this.setAttribute('list','genre-datalist')" list="genre-datalist">
-        <datalist id="genre-datalist"></datalist>
+        <select class="fsel" id="fg2" onchange="renderList()"><option value="all">Tutti i generi</option></select>
+        <select class="fsel" id="fsort" onchange="renderList()"><option value="date">↓ Data</option><option value="title">A-Z Titolo</option><option value="author">A-Z Autore</option><option value="pages">Pagine</option></select>
+        <input class="fi" id="fq" style="max-width:100px;padding:5px 9px;font-size:13px" placeholder="Cerca…" oninput="renderList()">
       </div>
       <div class="bggrid" id="bgrid"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
     </div>
@@ -565,6 +565,11 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       </div>
       <div class="sh mb" style="margin-bottom:10px">Statistiche avanzate</div>
       <div class="card mb" id="advst"><div class="loader"><div class="spinner"></div>Caricamento…</div></div>
+      <div class="sh mb" style="margin-bottom:10px;margin-top:14px">Livelli e badge</div>
+      <div class="card mb" id="levels-legend">
+        <div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:10px">I livelli si calcolano in base ai libri nella tua pila. Più libri hai, più XP servono per salire!</div>
+        <div id="levels-list"></div>
+      </div>
       <div class="sh mb" style="margin-bottom:10px;border-color:rgba(181,34,15,.3)">Zona pericolosa</div>
       <div class="card" style="border-color:rgba(181,34,15,.3)">
         <div style="font-size:13px;font-style:italic;color:var(--ink2);margin-bottom:11px;line-height:1.6">Cancella tutti i libri e azzera i progressi. Irreversibile.</div>
@@ -1007,7 +1012,7 @@ function go(id){
   if(id==='scaffale')rafAll();
   if(id==='missioni')loadMissions();
   if(id==='amici')loadFriends();
-  if(id==='profilo'){loadAdvStats();const p=PROFILE||{};document.getElementById('en').value=p.display_name||'';document.getElementById('eu').value=p.username||'';}
+  if(id==='profilo'){loadAdvStats();renderLevelsLegend();const p=PROFILE||{};document.getElementById('en').value=p.display_name||'';document.getElementById('eu').value=p.username||'';}
 }
 
 // ═══ INIT AFTER LOGIN ═══
@@ -1132,14 +1137,45 @@ function renShelf(){
 }
 
 function renderList(){
-  const g=document.getElementById('bgrid'),fs=document.getElementById('fs').value,ft=document.getElementById('ft').value,fq=(document.getElementById('fq').value||'').toLowerCase();
-  const books=BOOKS.filter(b=>{if(fs!=='all'&&b.status!==fs)return false;if(ft!=='all'&&(b.tipo||'libro')!==ft)return false;if(fq&&!b.title.toLowerCase().includes(fq)&&!(b.author||'').toLowerCase().includes(fq))return false;return true;});
+  const g=document.getElementById('bgrid');
+  const fs=document.getElementById('fs').value;
+  const ft=document.getElementById('ft').value;
+  const fg2val=document.getElementById('fg2')?document.getElementById('fg2').value:'all';
+  const fq=(document.getElementById('fq').value||'').toLowerCase();
+  const fsort=document.getElementById('fsort')?document.getElementById('fsort').value:'date';
+
+  // Update genre dropdown
+  const genreEl=document.getElementById('fg2');
+  if(genreEl){
+    const used=getUsedGenres();
+    const cur=genreEl.value;
+    genreEl.innerHTML='<option value="all">Tutti i generi</option>'+used.map(g=>'<option value="'+g+'"'+(g===cur?' selected':'')+'>'+g+'</option>').join('');
+  }
+
+  let books=BOOKS.filter(b=>{
+    if(fs!=='all'&&b.status!==fs)return false;
+    if(ft!=='all'&&(b.tipo||'libro')!==ft)return false;
+    if(fg2val&&fg2val!=='all'&&!(b.genere||'').toLowerCase().includes(fg2val.toLowerCase()))return false;
+    if(fq&&!b.title.toLowerCase().includes(fq)&&!(b.author||'').toLowerCase().includes(fq))return false;
+    return true;
+  });
+
+  // Sort
+  if(fsort==='title')books=[...books].sort((a,b)=>a.title.localeCompare(b.title,'it'));
+  else if(fsort==='author')books=[...books].sort((a,b)=>(a.author||'').localeCompare(b.author||'','it'));
+  else if(fsort==='pages')books=[...books].sort((a,b)=>(a.pagine||0)-(b.pagine||0));
+  else books=[...books].sort((a,b)=>new Date(b.added_at)-new Date(a.added_at));
+
   if(!books.length){g.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3);grid-column:1/-1">Nessun libro.</div>';return;}
   const lbl={unread:'Non letto',reading:'In lettura',done:'Completato',abandoned:'Abbandonato'};
   const cls2={unread:'su',reading:'srd',done:'sdn',abandoned:'sab'};
-  g.innerHTML=books.map(b=>{const c=spCol(b),pct=b.pagine&&b.page_cur?Math.round(b.page_cur/b.pagine*100):0,days=Math.round((Date.now()-new Date(b.added_at).getTime())/86400000);return`<div class="bc" onclick="openBK('${b.id}')"><div class="bc-sp ${c}"><div class="bc-t">${b.title}</div>${b.status==='reading'&&pct?`<div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.2)"><div style="height:100%;width:${pct}%;background:rgba(255,255,255,.7)"></div></div>`:''}</div><div class="bc-b"><div class="bc-ti">${b.title}</div><div class="bc-au">${b.author||'—'}</div><div class="bc-st ${cls2[b.status]||'su'}">${lbl[b.status]||'Non letto'}</div>${b.status==='unread'?`<div style="font-size:9px;color:var(--ink3);margin-top:2px;font-style:italic">${days}gg fa</div>`:''}${b.serie?`<div style="font-size:9px;color:var(--gold);margin-top:2px;font-style:italic">📚 ${b.serie}</div>`:''}</div></div>`;}).join('');
+  g.innerHTML=books.map(b=>{
+    const c=spCol(b);
+    const pct=b.pagine&&b.page_cur?Math.round(b.page_cur/b.pagine*100):0;
+    const days=Math.round((Date.now()-new Date(b.added_at).getTime())/86400000);
+    return'<div class="bc" onclick="openBK(this.dataset.id)" data-id="'+b.id+'">'<div class="bc-sp '+c+'"><div class="bc-t">'+b.title+'</div>'+(b.status==='reading'&&pct?'<div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.2)"><div style="height:100%;width:'+pct+'%;background:rgba(255,255,255,.7)"></div></div>':'')+'</div><div class="bc-b"><div class="bc-ti">'+b.title+'</div><div class="bc-au">'+(b.author||'—')+'</div><div class="bc-st '+(cls2[b.status]||'su')+'">'+(lbl[b.status]||'Non letto')+'</div>'+(b.pagine?'<div style="font-size:9px;color:var(--ink3);margin-top:2px;font-style:italic">'+b.pagine+' pag.</div>':'')+(b.status==='unread'?'<div style="font-size:9px;color:var(--ink3);margin-top:1px;font-style:italic">'+days+'gg fa</div>':'')+(b.serie?'<div style="font-size:9px;color:var(--gold);margin-top:2px;font-style:italic">📚 '+b.serie+'</div>':'')+'</div></div>';
+  }).join('');
 }
-
 function renShame(){
   const el=document.getElementById('shame');
   if(!BOOKS.length){el.innerHTML='<div style="font-size:12px;font-style:italic;color:var(--ink3)">Aggiungi libri.</div>';return;}
@@ -1244,38 +1280,52 @@ async function loadMissions(){
   const {data:userMissions}=await SB.from('missions').select('*').eq('user_id',USER.id);
   const doneDefs=BOOKS.filter(b=>b.status==='done');
   const grid=document.getElementById('mgrid');
+  
+  // Get streak from profile
+  const streak=PROFILE?.streak||0;
+  
   grid.innerHTML=MISSIONS_DEF.map(def=>{
     const um=userMissions?.find(m=>m.mission_key===def.key);
     const done=um?.completed||false;
     let pr=um?.progress||0;
-    // auto-calc progress
-    if(def.key==='first_book'||def.key==='complete_5'||def.key==='complete_10')pr=Math.min(doneDefs.length,def.tg);
+    
+    // Auto-calc progress
+    if(def.key==='first_book')pr=Math.min(doneDefs.length,1);
+    if(def.key==='complete_5')pr=Math.min(doneDefs.length,5);
+    if(def.key==='complete_10')pr=Math.min(doneDefs.length,10);
+    if(def.key==='read_manga')pr=Math.min(doneDefs.filter(b=>b.tipo==='manga'||b.tipo==='fumetto').length,1);
     if(def.key==='zero_pile')pr=BOOKS.filter(b=>b.status==='unread'||b.status==='reading').length===0?1:0;
-    return`<div class="mc2 ${done?'dn2':''}"><div class="mty">${def.ty}</div><div class="mti">${def.ti}</div><div class="mxp">${done?'Completata ✓':'+'+def.xp+' XP'}</div><div class="mbar"><div class="mfil" style="width:${Math.min(100,Math.round(pr/def.tg*100))}%"></div></div>${!done?`<div style="font-size:10px;font-style:italic;color:var(--ink3);margin-top:4px">${pr}/${def.tg}</div>`:''}${!done&&def.ac==='timer'?`<button class="mbtn" onclick="startTimer()">▶ Avvia timer 20min</button>`:''}</div>`;
-  }).join('');
-}
-
-function startTimer(){toast('⏱️ Timer 20min avviato! Buona lettura.','ok');}
-
-async function checkMissions(){
-  if(!USER)return;
-  const doneDefs=BOOKS.filter(b=>b.status==='done');
-  for(const def of MISSIONS_DEF){
-    let pr=0,done=false;
-    if(def.key==='first_book'||def.key==='complete_5'||def.key==='complete_10'){pr=doneDefs.length;done=pr>=def.tg;}
-    if(def.key==='zero_pile'){pr=BOOKS.filter(b=>b.status==='unread'||b.status==='reading').length===0?1:0;done=pr>=def.tg;}
-    if(done){
-      const {data:existing}=await SB.from('missions').select('id,completed').eq('user_id',USER.id).eq('mission_key',def.key).single();
-      if(!existing?.completed){
-        await SB.from('missions').upsert({user_id:USER.id,mission_key:def.key,progress:pr,target:def.tg,completed:true,completed_at:new Date().toISOString()});
-        await updateXP(def.xp);
-        toast(`🏆 Missione completata: ${def.ti} +${def.xp} XP!`,'ok');
+    if(def.key==='streak_3')pr=Math.min(streak,3);
+    if(def.key==='streak_7')pr=Math.min(streak,7);
+    if(def.key==='streak_30')pr=Math.min(streak,30);
+    if(def.key==='finish_series'){
+      // Check if any series is completely read
+      const seriesBooks={};
+      BOOKS.forEach(b=>{if(b.serie){if(!seriesBooks[b.serie])seriesBooks[b.serie]={total:0,done:0};seriesBooks[b.serie].total++;if(b.status==='done')seriesBooks[b.serie].done++;}});
+      pr=Object.values(seriesBooks).some(s=>s.total>1&&s.done===s.total)?1:0;
+    }
+    
+    const pct=Math.min(100,Math.round(pr/def.tg*100));
+    
+    let actionBtn='';
+    if(!done){
+      if(def.ac==='timer'){
+        actionBtn='<button class="mbtn" onclick="startReadingTimer(this)">▶ Avvia timer 20min</button>';
+      } else if(def.key==='streak_3'||def.key==='streak_7'||def.key==='streak_30'){
+        actionBtn='<button class="mbtn" onclick="logReadingDay()">📖 Ho letto oggi</button>';
       }
     }
-  }
+    
+    return'<div class="mc2 '+(done?'dn2':'')+'">'
+      +'<div class="mty">'+def.ty+'</div>'
+      +'<div class="mti">'+def.ti+'</div>'
+      +'<div class="mxp">'+(done?'Completata ✓':'+'+def.xp+' XP')+'</div>'
+      +'<div class="mbar"><div class="mfil" style="width:'+pct+'%"></div></div>'
+      +(!done?'<div style="font-size:10px;font-style:italic;color:var(--ink3);margin-top:4px">'+pr+'/'+def.tg+'</div>':'')
+      +actionBtn
+      +'</div>';
+  }).join('');
 }
-
-// ═══ ACTIVITY LOG ═══
 async function logActivity(type,payload){
   if(!USER)return;
   await SB.from('activities').insert({user_id:USER.id,type,payload});
@@ -1346,6 +1396,71 @@ async function loadFriends(){
   } else {
     document.getElementById('feed-list').innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3)">Aggiungi amiche per vedere il loro feed!</div>';
   }
+  
+  // Load shared readings
+  await loadSharedReadings(friendIds);
+}
+
+async function loadSharedReadings(friendIds) {
+  const {data:readings} = await SB.from('shared_readings').select('*');
+  const allIds = [USER.id, ...(friendIds||[])];
+  const myReadings = (readings||[]).filter(r=>allIds.includes(r.created_by));
+  
+  const el = document.getElementById('shared-readings-list');
+  if(!myReadings.length) {
+    el.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna lettura condivisa ancora.</div>';
+    return;
+  }
+  
+  const rows = [];
+  for(const r of myReadings) {
+    const {data:members} = await SB.from('shared_reading_members').select('*').eq('reading_id',r.id);
+    // Get member profiles
+    const memberProfiles = [];
+    for(const m of (members||[])) {
+      const {data:p} = await SB.from('profiles').select('id,display_name,username').eq('id',m.user_id).single();
+      if(p) memberProfiles.push({...p, page_cur:m.page_cur, member_id:m.id});
+    }
+    
+    // Find book total pages
+    const myBook = BOOKS.find(b=>b.title.toLowerCase()===r.book_title.toLowerCase());
+    const totalPages = myBook?.pagine || 0;
+    
+    rows.push('<div class="rtc">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      +'<div><div class="rtb">'+r.book_title+'</div>'
+      +(r.book_author?'<div class="rta2">'+r.book_author+'</div>':'')+' </div>'
+      +'<button onclick="openDisc('shared-'+r.id+'')" style="background:var(--sage);color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Crimson Pro',serif;font-style:italic">💬 Commenti</button>'
+      +'</div>'
+      +memberProfiles.map(m=>{
+        const pct=totalPages?Math.min(100,Math.round(m.page_cur/totalPages*100)):0;
+        const isMe=m.id===USER.id;
+        return'<div style="margin-bottom:8px">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+          +'<div style="font-size:12px;font-style:italic;color:var(--ink2)">'+(isMe?'📖 Tu':'👤 '+m.display_name)+'</div>'
+          +'<div style="font-size:11px;color:var(--ink3)">pag. '+m.page_cur+(totalPages?' / '+totalPages:'')+'</div>'
+          +'</div>'
+          +'<div style="height:5px;background:var(--p3);border-radius:3px;overflow:hidden">'
+          +'<div style="height:100%;width:'+pct+'%;background:'+(isMe?'var(--sage)':'var(--gold)')+';border-radius:3px;transition:width .4s"></div>'
+          +'</div>'
+          +(isMe?'<div style="margin-top:5px;display:flex;gap:5px;align-items:center">'
+            +'<input type="number" min="0" max="'+(totalPages||9999)+'" value="'+m.page_cur+'" id="pg-'+r.id+'" style="width:70px;background:var(--p2);border:1.5px solid var(--b);border-radius:5px;padding:3px 7px;font-size:12px;font-family:'Crimson Pro',serif">'
+            +'<button onclick="updateSharedPage(this.dataset.rid,this.dataset.mid)" data-rid="'+r.id+'" data-mid="'+m.member_id+'" style="background:var(--ink);color:var(--p);border:none;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer">Aggiorna</button>'
+            +'</div>':'')
+        +'</div>';
+      }).join('')
+      +'</div>');
+  }
+  el.innerHTML=rows.join('');
+}
+
+async function updateSharedPage(readingId, memberId) {
+  const input = document.getElementById('pg-'+readingId);
+  if(!input) return;
+  const page = parseInt(input.value)||0;
+  await SB.from('shared_reading_members').eq('id',memberId).update({page_cur:page});
+  toast('Pagina aggiornata! 📖','ok');
+  await loadSharedReadings([]);
 }
 async function addFriend(){
   const v=document.getElementById('fadd').value.trim().replace('@','');if(!v){toast('Inserisci username.','wn');return;}
@@ -1367,14 +1482,64 @@ async function rejectFriend(id){
   await SB.from('friendships').eq('id',id).delete();
   loadFriends();
 }
-async function proponi(name,friendId){
-  const un=BOOKS.filter(b=>b.status==='unread');if(!un.length){toast('Aggiungi libri prima!','wn');return;}
-  const b=un[Math.floor(Math.random()*un.length)];
-  toast('Proposta a '+name+': «'+b.title+'» — in futuro arriverà una notifica! 📖','ok');
+async function proponi(name, friendId) {
+  const myTitles = new Set(BOOKS.map(b=>b.title.toLowerCase()));
+  const {data:fBooks} = await SB.from('books').select('title,author').eq('user_id',friendId);
+  const common = (fBooks||[]).filter(b=>myTitles.has((b.title||'').toLowerCase()));
+  
+  if(!common.length) { toast('Nessun libro in comune con '+name+'!','wn'); return; }
+  
+  // Store for picker
+  window._proponiData = {common, friendId};
+  
+  const picker = document.createElement('div');
+  picker.id = 'proponi-picker';
+  picker.style.cssText = 'position:fixed;inset:0;background:rgba(26,21,16,.65);z-index:600;display:flex;align-items:center;justify-content:center;';
+  picker.innerHTML = '<div style="background:var(--p);border-radius:14px;padding:22px;max-width:380px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.4);">'
+    +'<div style="font-family:\'DM Serif Display\',serif;font-size:17px;font-style:italic;color:var(--ink);margin-bottom:12px">📚 Libri in comune con '+name+'</div>'
+    +'<div id="proponi-list"></div>'
+    +'<button onclick="document.getElementById(\'proponi-picker\').remove()" style="width:100%;margin-top:10px;background:transparent;border:1.5px solid var(--b);border-radius:7px;padding:9px;font-family:\'Crimson Pro\',serif;font-size:13px;font-style:italic;cursor:pointer;color:var(--ink3)">Annulla</button>'
+    +'</div>';
+  document.body.appendChild(picker);
+  
+  // Build list
+  const list = document.getElementById('proponi-list');
+  common.forEach(function(b,i) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:10px 12px;border:1.5px solid var(--b);border-radius:7px;margin-bottom:8px;cursor:pointer;';
+    div.innerHTML = '<div style="font-family:\'DM Serif Display\',serif;font-size:13px;color:var(--ink)">'+b.title+'</div>'+(b.author?'<div style="font-size:11px;font-style:italic;color:var(--ink3)">'+b.author+'</div>':'');
+    div.addEventListener('click', function() {
+      document.getElementById('proponi-picker').remove();
+      startSharedReading(b.title, [USER.id, friendId], null);
+    });
+    div.addEventListener('mouseover', function(){ this.style.borderColor='var(--red)'; });
+    div.addEventListener('mouseout', function(){ this.style.borderColor='var(--b)'; });
+    list.appendChild(div);
+  });
 }
 
-// ═══ COMMENTI ═══
-let CDC=null,CDR=null;
+async function startSharedReading(title, memberIds, overlay) {
+  if(overlay) overlay.remove();
+  // Check if already exists
+  const {data:existing} = await SB.from('shared_readings').select('id').eq('book_title',title);
+  let readingId;
+  if(existing && existing.length) {
+    readingId = existing[0].id;
+  } else {
+    const {data:newR} = await SB.from('shared_readings').insert({book_title:title, book_author:'', created_by:USER.id});
+    if(!newR) { toast('Errore creazione lettura condivisa.','wn'); return; }
+    readingId = Array.isArray(newR)?newR[0].id:newR.id;
+  }
+  // Add members
+  for(const uid of memberIds) {
+    await SB.from('shared_reading_members').upsert({reading_id:readingId, user_id:uid, page_cur:0});
+  }
+  toast('📚 Lettura condivisa avviata: "'+title+'"!', 'ok');
+  await logActivity('started_reading',{title});
+  go('amici');
+  loadFriends();
+}
+
 async function openDisc(key){
   CDC=key;
   let title=key,meta='';
@@ -1478,10 +1643,10 @@ async function sc(){
     if(ql.includes('corso')||ql.includes('lettura'))pool=BOOKS.filter(b=>b.status==='reading').length?BOOKS.filter(b=>b.status==='reading'):un;
     const picks=[];const used=new Set();const n=Math.min(3,pool.length);
     while(picks.length<n){const i=Math.floor(Math.random()*pool.length);if(!used.has(i)){used.add(i);picks.push(pool[i]);}}
-    const intros=['Guardando la tua pila di vergogna…','Ho esaminato i tuoi scaffali…','La risposta è già lì, tra i libri che ignori…'];
+    const intros=['Guardando la tua pila di vergogna…','Ho esaminato i tuoi scaffali…','La risposta è già lì, tra i libri che ignori…','Con grande disappunto, ti consiglio…','Dopo un attenta analisi della tua vergogna…','I tuoi libri aspettano. Eccone alcuni…','Ho interrogato la pila. Risponde:','Senza ulteriori indugi, leggi questo:'];
     const shortR=['è breve — finiscilo in un weekend.','meno di 300 pagine, niente scuse.','non richiede grande impegno.'];
     const longR=['è una lettura impegnativa.','ti terrà compagnia a lungo.','perfetto per immergersi.'];
-    const defR=['aspetta da troppo tempo.','è rimasto ignorato abbastanza.','merita la tua attenzione.'];
+    const defR=['aspetta da troppo tempo.','è rimasto ignorato abbastanza.','merita la tua attenzione.','ti fissa dallo scaffale.','è stufo di aspettare.','non si legge da solo, sai.','basta scuse, aprilo.'];
     const rArr=ql.includes('breve')||ql.includes('weekend')?shortR:ql.includes('lungo')?longR:defR;
     const intro=intros[Math.floor(Math.random()*intros.length)];
     const txt=intro+'<br><br>'+picks.map((b,i)=>'<strong>'+b.title+'</strong>'+(b.author?' di '+b.author:'')+' — '+rArr[i%rArr.length]).join('<br>');
@@ -1667,9 +1832,16 @@ function showGenreSuggestions(inputEl, containerEl) {
   const used = getUsedGenres();
   const filtered = val ? used.filter(g => g.toLowerCase().includes(val)) : used;
   if (!filtered.length) { containerEl.style.display = 'none'; return; }
-  containerEl.innerHTML = filtered.slice(0,8).map(g =>
-    '<div onclick="selectGenre(\''+g+'\',\''+inputEl.id+'\',\''+containerEl.id+'\')" style="padding:7px 12px;cursor:pointer;font-size:13px;font-style:italic;border-bottom:1px solid var(--b);transition:background .15s" onmouseover="this.style.background=\'var(--p3)\'" onmouseout="this.style.background=\'\'">'+g+'</div>'
-  ).join('');
+  containerEl.innerHTML = '';
+  filtered.slice(0,8).forEach(function(g) {
+    const div = document.createElement('div');
+    div.textContent = g;
+    div.style.cssText = 'padding:7px 12px;cursor:pointer;font-size:13px;font-style:italic;border-bottom:1px solid var(--b);';
+    div.addEventListener('click', function(){ selectGenre(g, inputEl.id, containerEl.id); });
+    div.addEventListener('mouseover', function(){ this.style.background='var(--p3)'; });
+    div.addEventListener('mouseout', function(){ this.style.background=''; });
+    containerEl.appendChild(div);
+  });
   containerEl.style.display = 'block';
 }
 
@@ -1789,6 +1961,106 @@ function updateAvatarBadge(){
   const av=document.getElementById('tb-av');if(av)av.textContent=badge;
   const pav=document.getElementById('pava');if(pav)pav.innerHTML=badge+'<br><small style="font-size:8px;opacity:.7">Lv '+(lv+1)+'</small>';
 }
+
+function renderLevelsLegend(){
+  const el=document.getElementById('levels-list');
+  if(!el)return;
+  const lvs=getLevels();
+  const badges=['🥚','🌱','📖','🔖','⚔️','🧹','🏛️','🌟','👑','🐉'];
+  const x=PROFILE?.xp||0;
+  el.innerHTML=lvs.map((lv,i)=>{
+    const isCurrentOrPast=x>=lv.x;
+    const isCurrent=x>=lv.x&&(i===lvs.length-1||x<lvs[i+1].x);
+    return'<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--b);opacity:'+(isCurrentOrPast?1:.4)+'"><div style="font-size:20px;width:28px;text-align:center">'+badges[i]+'</div><div style="flex:1"><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)'+(isCurrent?';font-weight:bold':'')+'">'+(isCurrent?'▶ ':'')+lv.n+'</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">da '+lv.x+' XP</div></div>'+(isCurrent?'<div style="font-size:10px;font-style:italic;color:var(--sage)">← sei qui</div>':'')+'</div>';
+  }).join('');
+}
+
+// ── READING TIMER ──
+let _timerInterval = null;
+let _timerEl = null;
+
+function startReadingTimer(btn) {
+  if(_timerInterval) {
+    clearInterval(_timerInterval);
+    _timerInterval = null;
+    btn.textContent = '▶ Avvia timer 20min';
+    return;
+  }
+  let secs = 20 * 60;
+  btn.textContent = '20:00 ⏸ Stop';
+  _timerInterval = setInterval(function() {
+    secs--;
+    const m = Math.floor(secs/60);
+    const s = secs%60;
+    btn.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s+' ⏸ Stop';
+    if(secs <= 0) {
+      clearInterval(_timerInterval);
+      _timerInterval = null;
+      btn.textContent = '✅ Completato!';
+      btn.style.background = 'var(--sage)';
+      toast('🎉 20 minuti completati! +10 XP', 'ok');
+      updateXP(10);
+      // Mark mission progress
+      saveMissionProgress('read_20min', 1, 1);
+    }
+  }, 1000);
+}
+
+async function logReadingDay() {
+  if(!USER || !PROFILE) return;
+  const today = new Date().toISOString().split('T')[0];
+  const lastRead = PROFILE.last_read_date || '';
+  const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+  
+  if(lastRead === today) { toast('Hai già registrato oggi! 📖', 'ok'); return; }
+  
+  const newStreak = lastRead === yesterday ? (PROFILE.streak||0)+1 : 1;
+  await SB.from('profiles').eq('id',USER.id).update({streak: newStreak, last_read_date: today});
+  PROFILE.streak = newStreak;
+  PROFILE.last_read_date = today;
+  
+  toast('📖 Giorno '+newStreak+' di fila! Continua così!', 'ok');
+  
+  // Check streak missions
+  if(newStreak >= 3) saveMissionProgress('streak_3', newStreak, 3);
+  if(newStreak >= 7) saveMissionProgress('streak_7', newStreak, 7);
+  if(newStreak >= 30) saveMissionProgress('streak_30', newStreak, 30);
+  
+  loadMissions();
+}
+
+async function saveMissionProgress(key, progress, target) {
+  if(!USER) return;
+  const completed = progress >= target;
+  const {data:existing} = await SB.from('missions').select('id,completed').eq('user_id',USER.id).eq('mission_key',key).single();
+  if(existing?.completed) return;
+  await SB.from('missions').upsert({user_id:USER.id, mission_key:key, progress:progress, target:target, completed:completed, completed_at:completed?new Date().toISOString():null});
+  if(completed) {
+    const def = MISSIONS_DEF.find(m=>m.key===key);
+    if(def) { await updateXP(def.xp); toast('🏆 Missione completata: '+def.ti+' +'+def.xp+' XP!', 'ok'); }
+  }
+}
+
+// ── LEVEL LEGEND POPUP ──
+function showLevelLegend() {
+  const lvs = getLevels();
+  const badges = ['🥚','🌱','📖','🔖','⚔️','🧹','🏛️','🌟','👑','🐉'];
+  const badgeNames = ['Uovo — stai covando qualcosa','Germoglio — inizia a crescere','Lettore — finalmente leggi','Segnalibro — prendi sul serio','Spadaccino — combatti la pila','Spazzino — stai pulendo','Biblioteca — maestro degli scaffali','Stella — quasi leggendario','Corona — quasi ci sei','Drago — hai azzerato la vergogna'];
+  const x = PROFILE?.xp||0;
+  let lv=0; const lva=getLevels(); for(let i=0;i<lva.length;i++)if(x>=lva[i].x)lv=i;
+  
+  const content = '<div style="font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:14px">I tuoi livelli</div>'
+    + lvs.map((l,i)=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--b);'+(i===lv?'background:var(--p2);border-radius:5px;padding:6px 8px;':'')+'">'
+      +'<span style="font-size:20px">'+badges[i]+'</span>'
+      +'<div><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)">'+(i===lv?'<strong>':'')+'Lv '+(i+1)+' — '+l.n+(i===lv?'</strong> ✦ (tu sei qui)':'')+'</div>'
+      +'<div style="font-size:10px;color:var(--ink3);font-style:italic">'+badgeNames[i]+'</div>'
+      +'<div style="font-size:10px;color:var(--red)">'+l.x+' XP necessari</div>'
+      +'</div></div>'
+    ).join('');
+  
+  document.getElementById('legend-content').innerHTML = content;
+  document.getElementById('legend-ov').style.display = 'flex';
+}
 </script>
 
 <div id="dragon-ov" style="display:none;position:fixed;inset:0;background:rgba(26,21,16,.7);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
@@ -1861,6 +2133,13 @@ function updateAvatarBadge(){
     </div>
     <div id="ruota-popup-spinning" style="font-size:14px;font-style:italic;color:var(--ink3)">Premi Gira!</div>
     <button id="ruota-spin-popup-btn" onclick="spinPopupWheel()" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)">🎲 Gira!</button>
+  </div>
+</div>
+
+<div id="legend-ov" style="display:none;position:fixed;inset:0;background:rgba(26,21,16,.65);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--p);border-radius:14px;padding:24px;max-width:380px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:fu .3s ease both;position:relative;">
+    <button onclick="document.getElementById('legend-ov').style.display='none'" style="position:absolute;top:12px;right:14px;background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">✕</button>
+    <div id="legend-content"></div>
   </div>
 </div>
 </body>
