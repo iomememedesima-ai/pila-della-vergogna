@@ -921,7 +921,7 @@ let MISSIONS_DEF = [
 
 const SC=['b1','b2','b3','b4','b5','b6','b7','b8','bm1','bm2','bm3','bf1'];
 const LV_NAMES=['Accumulatore','Acquirente Compulsivo','Aspirante Lettore','Divoratore di Pagine','Cacciatore di Segnalibri','Svuota Scaffali','Distruttore di Backlog','Maestro della Pila','Grande Bibliotecario','Leggenda della Vergogna'];
-function getLevels(){const total=Math.max(BOOKS.length,10)*XP_COMPLETE;return LV_NAMES.map((n,i)=>({n,x:i===0?0:Math.round(total*(i/LV_NAMES.length))}));}
+function getLevels(){const xpc=20;const total=Math.max(BOOKS.length,10)*xpc;return LV_NAMES.map((n,i)=>({n,x:i===0?0:Math.round(total*(i/LV_NAMES.length))}));}
 const LV=getLevels();
 
 // XP RULES — nuovi libri tolgono punti se più vecchi di 6 mesi
