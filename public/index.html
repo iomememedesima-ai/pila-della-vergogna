@@ -321,7 +321,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       <button class="abtn" type="submit" id="r-btn">Crea la mia Pila →</button>
     </form>
     <form class="aform" id="af-reset" onsubmit="doReset(event)">
-      <div style="font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:6px">Recupera password</div>
+      <div style="font-family:serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:6px">Recupera password</div>
       <div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:13px;line-height:1.6">Ti mandiamo un link per reimpostare la password.</div>
       <div class="aerr" id="reset-err"></div>
       <div class="fg"><label class="fl">Email</label><input class="fi" id="rs-email" type="email" placeholder="la.tua@email.it" required></div>
@@ -378,7 +378,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       <div class="g2 mb">
         <div class="card">
           <span class="tag">🎡 Ruota della Vergogna™</span>
-          <div style="font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px">Lascia decidere al destino</div>
+          <div style="font-family:serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px">Lascia decidere al destino</div>
           <div class="warea">
             <div class="wwrap"><div class="wptr"></div><div class="wheel" id="wheel"></div></div>
             <div style="display:flex;flex-direction:column;gap:7px">
@@ -391,7 +391,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
         </div>
         <div class="card">
           <span class="tag">🏆 Vergogna</span>
-          <div style="font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px">I tuoi crimini letterari</div>
+          <div style="font-family:serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px">I tuoi crimini letterari</div>
           <div id="shame"></div>
         </div>
       </div>
@@ -456,7 +456,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
         <div class="sres" id="sr"></div>
       </div>
       <div class="ipan card" id="ip-isbn">
-        <div style="font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;margin-bottom:9px">ISBN del libro</div>
+        <div style="font-family:serif;font-size:15px;font-style:italic;margin-bottom:9px">ISBN del libro</div>
         <div class="fg"><label class="fl">ISBN-10 o ISBN-13</label>
           <div style="display:flex;gap:7px"><input class="fi" id="isb" placeholder="es. 9788804668237" style="flex:1" onkeydown="if(event.key==='Enter')doISBN()"><button class="btn br bsm" onclick="doISBN()">Cerca</button></div>
         </div>
@@ -464,25 +464,25 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
         <div id="isr"></div>
       </div>
       <div class="ipan card" id="ip-pdf">
-        <div style="font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;margin-bottom:5px">Importa da lista</div>
+        <div style="font-family:serif;font-size:15px;font-style:italic;margin-bottom:5px">Importa da lista</div>
         <div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:11px;line-height:1.6">Incolla un elenco oppure carica un file TXT/CSV. Formato: "Titolo - Autore" per riga.</div>
         <div class="dz" id="dz" onclick="document.getElementById('pfi').click()" ondragover="dov(event)" ondragleave="dlv()" ondrop="ddr(event)">
           <input type="file" id="pfi" accept=".txt,.csv" style="display:none" onchange="pfs(event)">
           <div style="font-size:30px;margin-bottom:7px">📄</div>
-          <div style="font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;color:var(--ink2);margin-bottom:2px">Trascina un file</div>
+          <div style="font-family:serif;font-size:14px;font-style:italic;color:var(--ink2);margin-bottom:2px">Trascina un file</div>
           <div style="font-size:11px;font-style:italic;color:var(--ink3)">oppure clicca · TXT, CSV</div>
         </div>
         <div id="pdfl" style="display:none;padding:11px 0;text-align:center;font-size:12px;font-style:italic;color:var(--ink3)">🤖 Estrazione…</div>
         <div id="pdfr" style="display:none;margin-top:11px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
-            <div style="font-family:'DM Serif Display',serif;font-size:14px;font-style:italic">Libri trovati</div>
+            <div style="font-family:serif;font-size:14px;font-style:italic">Libri trovati</div>
             <div style="display:flex;gap:6px"><button class="btn bg bsm" onclick="allPDF(true)">Tutti</button><button class="btn bg bsm" onclick="allPDF(false)">Nessuno</button></div>
           </div>
           <div id="pdfl2"></div>
           <button class="btn br" onclick="impPDF()" style="margin-top:9px">➕ Importa selezionati</button>
         </div>
         <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--b)">
-          <div style="font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;margin-bottom:7px">Oppure incolla qui</div>
+          <div style="font-family:serif;font-size:14px;font-style:italic;margin-bottom:7px">Oppure incolla qui</div>
           <textarea class="fi" id="ptxt" style="width:100%;min-height:90px;resize:vertical" placeholder="The Diviners - Libba Bray&#10;Hakutaku&#10;Ariadne Vol.3&#10;..."></textarea>
           <button class="btn br bsm" onclick="parsePaste()" style="margin-top:7px">🔍 Estrai libri</button>
         </div>
@@ -503,7 +503,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       <div class="card">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
           <div style="width:33px;height:33px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:16px">🌿</div>
-          <div><div style="font-family:'DM Serif Display',serif;font-size:13px;font-style:italic">Il Bibliotecario</div><div style="font-size:10px;font-style:italic;color:var(--sage)">● mai nuovi acquisti</div></div>
+          <div><div style="font-family:serif;font-size:13px;font-style:italic">Il Bibliotecario</div><div style="font-size:10px;font-style:italic;color:var(--sage)">● mai nuovi acquisti</div></div>
         </div>
         <div class="chips">
           <div class="chip" onclick="ac(this.textContent)">Qualcosa di leggero</div>
@@ -551,7 +551,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       <div class="ph">
         <div class="pava" id="pava">?</div>
         <div>
-          <div style="font-family:'DM Serif Display',serif;font-size:21px;font-style:italic" id="pname">—</div>
+          <div style="font-family:serif;font-size:21px;font-style:italic" id="pname">—</div>
           <div style="font-size:12px;font-style:italic;color:rgba(255,255,255,.5)" id="phandle">—</div>
         </div>
       </div>
@@ -594,7 +594,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
 <div class="ov" id="bk-ov">
   <div class="mod" onclick="event.stopPropagation()">
     <div class="mh">
-      <div><div style="font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--p)" id="mk-t"></div><div style="font-size:12px;font-style:italic;color:rgba(255,255,255,.5)" id="mk-a"></div></div>
+      <div><div style="font-family:serif;font-size:18px;font-style:italic;color:var(--p)" id="mk-t"></div><div style="font-size:12px;font-style:italic;color:rgba(255,255,255,.5)" id="mk-a"></div></div>
       <button class="mc" onclick="closeBK()">✕</button>
     </div>
     <div class="mb">
@@ -621,7 +621,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
 <div class="ov" id="dc-ov">
   <div class="mod" style="max-width:560px" onclick="event.stopPropagation()">
     <div class="mh">
-      <div><div style="font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;color:var(--p)" id="dc-t"></div><div style="font-size:11px;font-style:italic;color:rgba(255,255,255,.45)" id="dc-m"></div></div>
+      <div><div style="font-family:serif;font-size:17px;font-style:italic;color:var(--p)" id="dc-t"></div><div style="font-size:11px;font-style:italic;color:rgba(255,255,255,.45)" id="dc-m"></div></div>
       <button class="mc" onclick="closeDC()">✕</button>
     </div>
     <div class="disc" style="border:none;border-radius:0">
@@ -1188,7 +1188,7 @@ function renShame(){
   const sc2={};BOOKS.forEach(b=>{if(b.serie)sc2[b.serie]=(sc2[b.serie]||0)+1;});
   const ts=Object.entries(sc2).sort((a,b)=>b[1]-a[1])[0];
   let h='';
-  if(old)h+=`<div class="shbox"><span style="font-size:20px">💀</span><div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:2px">Vergogna Suprema</div><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)">${old.title}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">${days} giorni nella pila</div></div></div>`;
+  if(old)h+=`<div class="shbox"><span style="font-size:20px">💀</span><div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:2px">Vergogna Suprema</div><div style="font-family:serif;font-size:13px;color:var(--ink)">${old.title}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">${days} giorni nella pila</div></div></div>`;
   if(ta)h+=`<div class="prow2"><span class="plb">Autore più accumulato</span><div class="ptr"><div class="pfl" style="width:80%;background:linear-gradient(to right,#c03820,#9e2a1a)"></div></div><span class="ppc" style="color:var(--red)">${ta[0].split(' ').pop()}×${ta[1]}</span></div>`;
   if(tg)h+=`<div class="prow2"><span class="plb">Genere più ignorato</span><div class="ptr"><div class="pfl" style="width:65%;background:linear-gradient(to right,#9e6e22,#7a5218)"></div></div><span class="ppc">${tg[0].slice(0,8)}</span></div>`;
   if(ts)h+=`<div class="prow2"><span class="plb">Serie più accumulata</span><div class="ptr"><div class="pfl" style="width:90%;background:linear-gradient(to right,#7a3898,#5a2878)"></div></div><span class="ppc" style="color:#7a3898">${ts[0]}×${ts[1]}</span></div>`;
@@ -1241,7 +1241,7 @@ async function addManuale(){
 
 async function pfile(file){document.getElementById('pdfl').style.display='block';document.getElementById('pdfr').style.display='none';try{PDFEX=extBooks(await file.text());renPDF();}catch(e){toast('Errore file.','wn');}document.getElementById('pdfl').style.display='none';}
 function extBooks(txt){const lines=txt.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l.length>2&&l.length<200);const res=[],seen=new Set();lines.forEach(line=>{if(/^\d+$/.test(line)||line.startsWith('http'))return;let ti='',au='',found=false;for(const sep of[' - ',' – ',' — ',' di ',' by ',', ']){const i=line.indexOf(sep);if(i>2&&i<line.length-3){ti=line.slice(0,i).trim();au=line.slice(i+sep.length).trim();found=true;break;}}if(!found)ti=line;ti=ti.replace(/^["«»\-\*]+|["«»\-\*]+$/g,'').trim();const k=ti.toLowerCase();if(!seen.has(k)&&ti.length>2){seen.add(k);res.push({title:ti,author:au});}});return res.slice(0,200);}
-function renPDF(){const el=document.getElementById('pdfl2');el.innerHTML=!PDFEX.length?'<div style="font-size:12px;font-style:italic;color:var(--ink3)">Nessun libro riconosciuto.</div>':PDFEX.map((b,i)=>`<div class="pbr"><input type="checkbox" class="pdf-check" id="pbc-${i}" checked style="accent-color:var(--red);width:14px;height:14px;cursor:pointer"><div style="flex:1"><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)">${b.title}</div>${b.author?`<div style="font-size:10px;font-style:italic;color:var(--ink3)">${b.author}</div>`:''}</div></div>`).join('');document.getElementById('pdfr').style.display='block';}
+function renPDF(){const el=document.getElementById('pdfl2');el.innerHTML=!PDFEX.length?'<div style="font-size:12px;font-style:italic;color:var(--ink3)">Nessun libro riconosciuto.</div>':PDFEX.map((b,i)=>`<div class="pbr"><input type="checkbox" class="pdf-check" id="pbc-${i}" checked style="accent-color:var(--red);width:14px;height:14px;cursor:pointer"><div style="flex:1"><div style="font-family:serif;font-size:13px;color:var(--ink)">${b.title}</div>${b.author?`<div style="font-size:10px;font-style:italic;color:var(--ink3)">${b.author}</div>`:''}</div></div>`).join('');document.getElementById('pdfr').style.display='block';}
 function allPDF(v){document.querySelectorAll('.pdf-check').forEach(c=>c.checked=v);}
 async function impPDF(){
   const sel=PDFEX.filter((_,i)=>document.getElementById('pbc-'+i)?.checked);
@@ -1496,7 +1496,7 @@ async function proponi(name, friendId) {
   picker.id = 'proponi-picker';
   picker.style.cssText = 'position:fixed;inset:0;background:rgba(26,21,16,.65);z-index:600;display:flex;align-items:center;justify-content:center;';
   picker.innerHTML = '<div style="background:var(--p);border-radius:14px;padding:22px;max-width:380px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.4);">'
-    +'<div style="font-family:\'DM Serif Display\',serif;font-size:17px;font-style:italic;color:var(--ink);margin-bottom:12px">📚 Libri in comune con '+name+'</div>'
+    +'<div style="font-family:serif,serif;font-size:17px;font-style:italic;color:var(--ink);margin-bottom:12px">📚 Libri in comune con '+name+'</div>'
     +'<div id="proponi-list"></div>'
     +'<button onclick="document.getElementById(\'proponi-picker\').remove()" style="width:100%;margin-top:10px;background:transparent;border:1.5px solid var(--b);border-radius:7px;padding:9px;font-family:\'Crimson Pro\',serif;font-size:13px;font-style:italic;cursor:pointer;color:var(--ink3)">Annulla</button>'
     +'</div>';
@@ -1507,7 +1507,7 @@ async function proponi(name, friendId) {
   common.forEach(function(b,i) {
     const div = document.createElement('div');
     div.style.cssText = 'padding:10px 12px;border:1.5px solid var(--b);border-radius:7px;margin-bottom:8px;cursor:pointer;';
-    div.innerHTML = '<div style="font-family:\'DM Serif Display\',serif;font-size:13px;color:var(--ink)">'+b.title+'</div>'+(b.author?'<div style="font-size:11px;font-style:italic;color:var(--ink3)">'+b.author+'</div>':'');
+    div.innerHTML = '<div style="font-family:serif,serif;font-size:13px;color:var(--ink)">'+b.title+'</div>'+(b.author?'<div style="font-size:11px;font-style:italic;color:var(--ink3)">'+b.author+'</div>':'');
     div.addEventListener('click', function() {
       document.getElementById('proponi-picker').remove();
       startSharedReading(b.title, [USER.id, friendId], null);
@@ -1606,9 +1606,9 @@ async function loadAdvStats(){
   const recenti=BOOKS.filter(b=>{const age=Date.now()-new Date(b.added_at).getTime();return age<SIX_MONTHS_MS;}).length;
   const vecchi=BOOKS.filter(b=>{const age=Date.now()-new Date(b.added_at).getTime();return age>SIX_MONTHS_MS&&b.status==='unread';}).length;
   el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:9px;margin-bottom:12px">
-    <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:24px">${pr.toLocaleString()}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">pagine lette</div></div>
-    <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:24px">${dn}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">completati</div></div>
-    <div style="text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:24px">${xp}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">XP totali</div></div>
+    <div style="text-align:center"><div style="font-family:serif;font-size:24px">${pr.toLocaleString()}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">pagine lette</div></div>
+    <div style="text-align:center"><div style="font-family:serif;font-size:24px">${dn}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">completati</div></div>
+    <div style="text-align:center"><div style="font-family:serif;font-size:24px">${xp}</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">XP totali</div></div>
   </div>
   <div style="background:var(--red3);border:1px solid rgba(181,34,15,.2);border-radius:7px;padding:9px 11px;margin-bottom:10px;font-size:12px;font-style:italic;color:var(--ink2);line-height:1.6">
     ⚠️ <strong>${vecchi}</strong> libri vecchi nella pila tolgono XP quando aggiungi nuovi libri (acquistati da più di 6 mesi).<br>
@@ -1756,7 +1756,7 @@ function openRuotaPopup() {
     const btn = document.createElement('button');
     btn.id = 'ruota-spin-popup-btn';
     btn.textContent = '🎲 Gira!';
-    btn.style.cssText = 'background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:"DM Serif Display",serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)';
+    btn.style.cssText = 'background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:serif,serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)';
     btn.onclick = spinPopupWheel;
     document.getElementById('ruota-popup-spinning').after(btn);
   }
@@ -1886,7 +1886,7 @@ async function doSearch() {
       return '<div class="sri" onclick="addBook(JSON.parse(this.dataset.book))" data-book="' + dataStr + '">' +
         '<div style="width:30px;height:44px;flex-shrink:0;background:var(--p3);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:18px">📚</div>' +
         '<div style="flex:1;min-width:0">' +
-        '<div style="font-family:\'DM Serif Display\',serif;font-size:13px;color:var(--ink);line-height:1.3">' + it.title + '</div>' +
+        '<div style="font-family:serif,serif;font-size:13px;color:var(--ink);line-height:1.3">' + it.title + '</div>' +
         '<div style="font-size:11px;font-style:italic;color:var(--ink3)">' + (it.author||'') + (it.year?' · '+it.year:'') + (it.pages?' · '+it.pages+'p':'') + '</div>' +
         (it.genre ? '<div style="font-size:10px;color:var(--sage)">'+it.genre+'</div>' : '') +
         '</div>' +
@@ -1933,11 +1933,11 @@ async function doISBN() {
       '<div style="margin-top:11px;background:var(--p2);border:1.5px solid var(--b);border-radius:8px;padding:14px;display:flex;gap:12px;align-items:flex-start">' +
       '<div style="width:55px;height:80px;background:var(--p3);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">📚</div>' +
       '<div style="flex:1">' +
-      '<div style="font-family:\'DM Serif Display\',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:3px">' + it.title + '</div>' +
+      '<div style="font-family:serif,serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:3px">' + it.title + '</div>' +
       '<div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:4px">' + (it.author||'') + (it.year?' · '+it.year:'') + (it.pages?' · '+it.pages+' pag.':'') + '</div>' +
       (it.genre ? '<div style="font-size:11px;color:var(--sage);margin-bottom:8px">'+it.genre+'</div>' : '') +
       (it.description ? '<div style="font-size:11px;font-style:italic;color:var(--ink3);margin-bottom:10px">'+it.description+'</div>' : '') +
-      '<button id="isbn-add-btn" data-book="' + dataStr + '" style="background:var(--red);color:#fff;border:none;border-radius:5px;padding:8px 16px;font-family:\'DM Serif Display\',serif;font-size:14px;font-style:italic;cursor:pointer">➕ Aggiungi alla pila</button>' +
+      '<button id="isbn-add-btn" data-book="' + dataStr + '" style="background:var(--red);color:#fff;border:none;border-radius:5px;padding:8px 16px;font-family:serif,serif;font-size:14px;font-style:italic;cursor:pointer">➕ Aggiungi alla pila</button>' +
       '</div></div>';
     document.getElementById('isbn-add-btn').onclick = function() { addBook(JSON.parse(this.dataset.book.replace(/&quot;/g,'"'))); };
   } catch(e) {
@@ -1971,7 +1971,7 @@ function renderLevelsLegend(){
   el.innerHTML=lvs.map((lv,i)=>{
     const isCurrentOrPast=x>=lv.x;
     const isCurrent=x>=lv.x&&(i===lvs.length-1||x<lvs[i+1].x);
-    return'<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--b);opacity:'+(isCurrentOrPast?1:.4)+'"><div style="font-size:20px;width:28px;text-align:center">'+badges[i]+'</div><div style="flex:1"><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)'+(isCurrent?';font-weight:bold':'')+'">'+(isCurrent?'▶ ':'')+lv.n+'</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">da '+lv.x+' XP</div></div>'+(isCurrent?'<div style="font-size:10px;font-style:italic;color:var(--sage)">← sei qui</div>':'')+'</div>';
+    return'<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--b);opacity:'+(isCurrentOrPast?1:.4)+'"><div style="font-size:20px;width:28px;text-align:center">'+badges[i]+'</div><div style="flex:1"><div style="font-family:serif;font-size:13px;color:var(--ink)'+(isCurrent?';font-weight:bold':'')+'">'+(isCurrent?'▶ ':'')+lv.n+'</div><div style="font-size:10px;font-style:italic;color:var(--ink3)">da '+lv.x+' XP</div></div>'+(isCurrent?'<div style="font-size:10px;font-style:italic;color:var(--sage)">← sei qui</div>':'')+'</div>';
   }).join('');
 }
 
@@ -2049,10 +2049,10 @@ function showLevelLegend() {
   const x = PROFILE?.xp||0;
   let lv=0; const lva=getLevels(); for(let i=0;i<lva.length;i++)if(x>=lva[i].x)lv=i;
   
-  const content = '<div style="font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:14px">I tuoi livelli</div>'
+  const content = '<div style="font-family:serif;font-size:18px;font-style:italic;color:var(--ink);margin-bottom:14px">I tuoi livelli</div>'
     + lvs.map((l,i)=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--b);'+(i===lv?'background:var(--p2);border-radius:5px;padding:6px 8px;':'')+'">'
       +'<span style="font-size:20px">'+badges[i]+'</span>'
-      +'<div><div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--ink)">'+(i===lv?'<strong>':'')+'Lv '+(i+1)+' — '+l.n+(i===lv?'</strong> ✦ (tu sei qui)':'')+'</div>'
+      +'<div><div style="font-family:serif;font-size:13px;color:var(--ink)">'+(i===lv?'<strong>':'')+'Lv '+(i+1)+' — '+l.n+(i===lv?'</strong> ✦ (tu sei qui)':'')+'</div>'
       +'<div style="font-size:10px;color:var(--ink3);font-style:italic">'+badgeNames[i]+'</div>'
       +'<div style="font-size:10px;color:var(--red)">'+l.x+' XP necessari</div>'
       +'</div></div>'
@@ -2105,15 +2105,15 @@ function showLevelLegend() {
   <path d="M70 82 Q68 70 72 65 Q74 74 76 82Z" fill="#ff4400" opacity="0.8"/>
   <path d="M60 74 Q55 82 50 86 Q57 80 60 88 Q63 80 70 86 Q65 82 60 74Z" fill="#ffaa00" opacity="0.9"/>
 </svg>
-    <div id="dragon-msg" style="font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;color:var(--ink);line-height:1.4;margin-bottom:6px"></div>
+    <div id="dragon-msg" style="font-family:serif;font-size:17px;font-style:italic;color:var(--ink);line-height:1.4;margin-bottom:6px"></div>
     <div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:16px">— Mushu, drago della vergogna</div>
-    <button onclick="document.getElementById('dragon-ov').style.display='none'" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;cursor:pointer">Ok ok, vado a leggere 📚</button>
+    <button onclick="document.getElementById('dragon-ov').style.display='none'" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-family:serif;font-size:15px;font-style:italic;cursor:pointer">Ok ok, vado a leggere 📚</button>
   </div>
 </div>
 
 <div id="ruota-ov" style="display:none;position:fixed;inset:0;background:rgba(26,21,16,.65);z-index:400;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
   <div style="background:var(--p);border-radius:16px;padding:28px 24px;max-width:380px;width:92%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:fu .35s ease both;">
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;font-style:italic;color:var(--ink);margin-bottom:4px">🎡 La Ruota Decide</div>
+    <div style="font-family:serif;font-size:22px;font-style:italic;color:var(--ink);margin-bottom:4px">🎡 La Ruota Decide</div>
     <div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:20px">il destino ha parlato</div>
     <div style="position:relative;width:180px;height:180px;margin:0 auto 20px;">
       <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--red);z-index:5"></div>
@@ -2122,17 +2122,17 @@ function showLevelLegend() {
       </div>
     </div>
     <div id="ruota-popup-result" style="display:none;animation:fu .4s ease both;">
-      <div id="ruota-popup-book" style="font-family:'DM Serif Display',serif;font-size:20px;font-style:italic;color:var(--ink);margin-bottom:4px"></div>
+      <div id="ruota-popup-book" style="font-family:serif;font-size:20px;font-style:italic;color:var(--ink);margin-bottom:4px"></div>
       <div id="ruota-popup-author" style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:14px"></div>
       <div id="ruota-popup-reasons" style="font-size:13px;font-style:italic;color:var(--ink2);margin-bottom:16px;line-height:1.6;text-align:left;background:var(--p2);border-radius:8px;padding:10px 14px;"></div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button id="ruota-accept-btn" style="background:var(--sage);color:#fff;border:none;border-radius:6px;padding:9px 20px;font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;cursor:pointer">✓ Accetto la sfida</button>
-        <button onclick="spinPopupWheel()" style="background:transparent;border:1.5px solid var(--b);color:var(--ink2);border-radius:6px;padding:9px 16px;font-family:'DM Serif Display',serif;font-size:14px;font-style:italic;cursor:pointer">↺ Rigira</button>
+        <button id="ruota-accept-btn" style="background:var(--sage);color:#fff;border:none;border-radius:6px;padding:9px 20px;font-family:serif;font-size:14px;font-style:italic;cursor:pointer">✓ Accetto la sfida</button>
+        <button onclick="spinPopupWheel()" style="background:transparent;border:1.5px solid var(--b);color:var(--ink2);border-radius:6px;padding:9px 16px;font-family:serif;font-size:14px;font-style:italic;cursor:pointer">↺ Rigira</button>
         <button onclick="document.getElementById('ruota-ov').style.display='none'" style="background:transparent;border:1.5px solid var(--b);color:var(--ink3);border-radius:6px;padding:9px 16px;font-size:13px;font-style:italic;cursor:pointer">Chiudi</button>
       </div>
     </div>
     <div id="ruota-popup-spinning" style="font-size:14px;font-style:italic;color:var(--ink3)">Premi Gira!</div>
-    <button id="ruota-spin-popup-btn" onclick="spinPopupWheel()" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)">🎲 Gira!</button>
+    <button id="ruota-spin-popup-btn" onclick="spinPopupWheel()" style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:11px 28px;font-family:serif;font-size:16px;font-style:italic;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(181,34,15,.3)">🎲 Gira!</button>
   </div>
 </div>
 
