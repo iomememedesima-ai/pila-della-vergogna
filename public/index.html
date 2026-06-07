@@ -1405,59 +1405,127 @@ async function loadFriends(){
 }
 
 async function loadSharedReadings(friendIds) {
-  // Load readings created by user or friends
-  const allIds = [USER.id, ...(friendIds||[])];
-  const {data:readings} = await SB.from('shared_readings').select('*').in('created_by', allIds);
-  const myReadings = readings||[];
-  
   const el = document.getElementById('shared-readings-list');
-  if(!myReadings.length) {
-    el.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna lettura condivisa ancora.</div>';
+  
+  // Load readings where user is a member
+  const {data:memberships} = await SB.from('shared_reading_members').select('reading_id').eq('user_id',USER.id);
+  const myReadingIds = (memberships||[]).map(m=>m.reading_id);
+  
+  // Load readings created by user
+  const {data:created} = await SB.from('shared_readings').select('*').eq('created_by',USER.id);
+  let allReadings = [...(created||[])];
+  
+  // Add readings where user is member but not creator
+  for(const rid of myReadingIds) {
+    if(!allReadings.find(r=>r.id===rid)) {
+      const {data:r} = await SB.from('shared_readings').select('*').eq('id',rid).single();
+      if(r) allReadings.push(r);
+    }
+  }
+  
+  if(!allReadings.length) {
+    el.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--ink3)">Nessuna lettura condivisa ancora. Premi Proponi per iniziarne una!</div>';
     return;
   }
   
-  const rows = [];
-  for(const r of myReadings) {
+  el.innerHTML = '';
+  
+  for(const r of allReadings) {
     const {data:members} = await SB.from('shared_reading_members').select('*').eq('reading_id',r.id);
-    // Get member profiles
     const memberProfiles = [];
     for(const m of (members||[])) {
-      const {data:p} = await SB.from('profiles').select('id,display_name,username').eq('id',m.user_id).single();
+      const {data:p} = await SB.from('profiles').select('id,display_name').eq('id',m.user_id).single();
       if(p) memberProfiles.push({...p, page_cur:m.page_cur, member_id:m.id});
     }
     
-    // Find book total pages
     const myBook = BOOKS.find(b=>b.title.toLowerCase()===r.book_title.toLowerCase());
     const totalPages = myBook?.pagine || 0;
+    const isMember = myReadingIds.includes(r.id) || r.created_by === USER.id;
+    const isCreator = r.created_by === USER.id;
     
-    rows.push('<div class="rtc">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-      +'<div><div class="rtb">'+r.book_title+'</div>'
-      +(r.book_author?'<div class="rta2">'+r.book_author+'</div>':'')+' </div>'
-      +'<button onclick="openDisc(this.dataset.rid)" data-rid="shared-'+r.id+'" style="background:var(--sage);color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;font-style:italic">💬 Commenti</button>'
-      +'</div>'
-      +memberProfiles.map(m=>{
-        const pct=totalPages?Math.min(100,Math.round(m.page_cur/totalPages*100)):0;
-        const isMe=m.id===USER.id;
-        return'<div style="margin-bottom:8px">'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
-          +'<div style="font-size:12px;font-style:italic;color:var(--ink2)">'+(isMe?'📖 Tu':'👤 '+m.display_name)+'</div>'
-          +'<div style="font-size:11px;color:var(--ink3)">pag. '+m.page_cur+(totalPages?' / '+totalPages:'')+'</div>'
-          +'</div>'
-          +'<div style="height:5px;background:var(--p3);border-radius:3px;overflow:hidden">'
-          +'<div style="height:100%;width:'+pct+'%;background:'+(isMe?'var(--sage)':'var(--gold)')+';border-radius:3px;transition:width .4s"></div>'
-          +'</div>'
-          +(isMe?'<div style="margin-top:5px;display:flex;gap:5px;align-items:center">'
-            +'<input type="number" min="0" max="'+(totalPages||9999)+'" value="'+m.page_cur+'" id="pg-'+r.id+'" style="width:70px;background:var(--p2);border:1.5px solid var(--b);border-radius:5px;padding:3px 7px;font-size:12px;font-family:serif">'
-            +'<button onclick="updateSharedPage(this.dataset.rid,this.dataset.mid)" data-rid="'+r.id+'" data-mid="'+m.member_id+'" style="background:var(--ink);color:var(--p);border:none;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer">Aggiorna</button>'
-            +'</div>':'')
+    const card = document.createElement('div');
+    card.className = 'rtc';
+    
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px';
+    
+    const titleDiv = document.createElement('div');
+    titleDiv.innerHTML = '<div class="rtb">'+r.book_title+'</div>'
+      +(memberProfiles.length?'<div style="font-size:11px;font-style:italic;color:var(--ink3)">'+memberProfiles.map(m=>m.display_name).join(' & ')+'</div>':'');
+    
+    const btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:5px';
+    
+    if(isMember) {
+      const commentBtn = document.createElement('button');
+      commentBtn.textContent = '💬 Commenti';
+      commentBtn.style.cssText = 'background:var(--sage);color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer';
+      commentBtn.addEventListener('click', function() { openSharedDisc(r.id, r.book_title); });
+      btns.appendChild(commentBtn);
+    }
+    
+    if(isCreator) {
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.style.cssText = 'background:transparent;border:1px solid rgba(181,34,15,.3);color:var(--red);border-radius:5px;padding:5px 8px;font-size:10px;cursor:pointer';
+      delBtn.addEventListener('click', function() { deleteSharedReading(r.id); });
+      btns.appendChild(delBtn);
+    }
+    
+    header.appendChild(titleDiv);
+    header.appendChild(btns);
+    card.appendChild(header);
+    
+    // Member progress
+    for(const m of memberProfiles) {
+      const pct = totalPages ? Math.min(100, Math.round(m.page_cur/totalPages*100)) : 0;
+      const isMe = m.id === USER.id;
+      
+      const memberDiv = document.createElement('div');
+      memberDiv.style.marginBottom = '8px';
+      memberDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">'
+        +'<div style="font-size:12px;font-style:italic;color:var(--ink2)">'+(isMe?'📖 Tu':'👤 '+m.display_name)+'</div>'
+        +'<div style="font-size:11px;color:var(--ink3)">p.'+m.page_cur+(totalPages?'/'+totalPages:'')+'</div>'
+        +'</div>'
+        +'<div style="height:5px;background:var(--p3);border-radius:3px;overflow:hidden">'
+        +'<div style="height:100%;width:'+pct+'%;background:'+(isMe?'var(--sage)':'var(--gold)')+';border-radius:3px"></div>'
         +'</div>';
-      }).join('')
-      +'</div>');
+      
+      if(isMe) {
+        const updateDiv = document.createElement('div');
+        updateDiv.style.cssText = 'margin-top:4px;display:flex;gap:5px;align-items:center';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = String(totalPages||9999);
+        input.value = String(m.page_cur);
+        input.id = 'pg-'+r.id;
+        input.style.cssText = 'width:65px;background:var(--p2);border:1.5px solid var(--b);border-radius:5px;padding:3px 7px;font-size:12px';
+        const updateBtn = document.createElement('button');
+        updateBtn.textContent = '✓';
+        updateBtn.style.cssText = 'background:var(--ink);color:var(--p);border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer';
+        const mid = m.member_id;
+        const rid = r.id;
+        updateBtn.addEventListener('click', function() { updateSharedPage(rid, mid); });
+        updateDiv.appendChild(input);
+        updateDiv.appendChild(updateBtn);
+        memberDiv.appendChild(updateDiv);
+      }
+      
+      card.appendChild(memberDiv);
+    }
+    
+    el.appendChild(card);
   }
-  el.innerHTML=rows.join('');
 }
-
+async function deleteSharedReading(readingId) {
+  if(!confirm('Eliminare questa lettura condivisa?')) return;
+  await SB.from('shared_reading_members').eq('reading_id',readingId).delete();
+  await SB.from('shared_readings').eq('id',readingId).delete();
+  toast('Lettura condivisa eliminata.','ok');
+  loadFriends();
+}
 async function updateSharedPage(readingId, memberId) {
   const input = document.getElementById('pg-'+readingId);
   if(!input) return;
@@ -2124,6 +2192,15 @@ async function checkMissions(){
       }
     }
   }
+}
+
+async function openSharedDisc(readingId, title) {
+  CDC = 'shared-' + readingId;
+  CDR = readingId;
+  document.getElementById('dc-t').textContent = title || 'Lettura condivisa';
+  document.getElementById('dc-m').textContent = 'Lettura condivisa';
+  await loadComments();
+  document.getElementById('dc-ov').classList.add('on');
 }
 </script>
 
