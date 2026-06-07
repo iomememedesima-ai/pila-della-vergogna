@@ -1381,6 +1381,9 @@ async function loadFriends(){
     }
     document.getElementById('pending-list').innerHTML=pendingRows.join('');
   }
+  // Load reading invites TO this user
+  await loadReadingInvites();
+  
   // Feed
   if(friendIds.length){
     const acts=[];
@@ -1521,8 +1524,9 @@ async function loadSharedReadings(friendIds) {
 }
 async function deleteSharedReading(readingId) {
   if(!confirm('Eliminare questa lettura condivisa?')) return;
-  await SB.from('shared_reading_members').eq('reading_id',readingId).delete();
-  await SB.from('shared_readings').eq('id',readingId).delete();
+  const {error:e1} = await SB.from('shared_reading_members').eq('reading_id',readingId).delete();
+  const {error:e2} = await SB.from('shared_readings').eq('id',readingId).delete();
+  if(e2) { toast('Errore: '+e2.message,'wn'); return; }
   toast('Lettura condivisa eliminata.','ok');
   loadFriends();
 }
@@ -1592,29 +1596,33 @@ async function proponi(name, friendId) {
 
 async function startSharedReading(title, memberIds, overlay) {
   if(overlay) overlay.remove();
-  // memberIds might be a string if called from HTML
   const ids = Array.isArray(memberIds) ? memberIds : [USER.id];
   try {
-    // Insert new shared reading
     const {data:newR, error:e1} = await SB.from('shared_readings').insert({
-      book_title: title,
-      book_author: '',
-      created_by: USER.id
+      book_title: title, book_author: '', created_by: USER.id
     });
     if(e1) { toast('Errore: '+e1.message,'wn'); return; }
     const readingId = Array.isArray(newR)?newR[0]?.id:newR?.id;
-    if(!readingId) { toast('Errore: ID lettura non trovato.','wn'); return; }
-    // Add members
+    if(!readingId) { toast('Errore: ID non trovato.','wn'); return; }
+    
+    // Add creator as member
+    await SB.from('shared_reading_members').upsert({reading_id:readingId, user_id:USER.id, page_cur:0});
+    
+    // Send invites to others
     for(const uid of ids) {
-      await SB.from('shared_reading_members').upsert({reading_id:readingId, user_id:uid, page_cur:0});
+      if(uid !== USER.id) {
+        await SB.from('reading_invites').insert({
+          reading_id: readingId, from_user: USER.id, to_user: uid,
+          status: 'pending', message: 'Ti invito a leggere insieme!'
+        });
+      }
     }
-    toast('📚 Lettura condivisa avviata: "'+title+'"!', 'ok');
+    toast('Invito inviato per "'+title+'"! 📚', 'ok');
     await logActivity('started_reading',{title});
     go('amici');
     loadFriends();
   } catch(e) {
     toast('Errore: '+e.message,'wn');
-    console.error('startSharedReading error:', e);
   }
 }
 
@@ -2201,6 +2209,74 @@ async function openSharedDisc(readingId, title) {
   document.getElementById('dc-m').textContent = 'Lettura condivisa';
   await loadComments();
   document.getElementById('dc-ov').classList.add('on');
+}
+
+async function loadReadingInvites() {
+  if(!USER) return;
+  const {data:invites} = await SB.from('reading_invites').select('*').eq('to_user',USER.id).eq('status','pending');
+  
+  // Find the invites section - add after pending-list
+  let inviteEl = document.getElementById('reading-invites-list');
+  if(!inviteEl) {
+    // Create the section dynamically
+    const pendingSection = document.getElementById('pending-list');
+    if(!pendingSection) return;
+    const section = document.createElement('div');
+    section.style.marginTop = '14px';
+    section.innerHTML = '<div style="font-family:serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid var(--b)">Inviti lettura <span style="font-size:12px;color:var(--ink3)" id="invites-count"></span></div>'
+      +'<div id="reading-invites-list"></div>';
+    pendingSection.parentNode.insertBefore(section, pendingSection.nextSibling);
+    inviteEl = document.getElementById('reading-invites-list');
+  }
+  
+  document.getElementById('invites-count').textContent = (invites?.length||0)+' in attesa';
+  
+  if(!(invites||[]).length) {
+    inviteEl.innerHTML = '<div style="font-size:13px;font-style:italic;color:var(--ink3);margin-bottom:10px">Nessun invito in arrivo.</div>';
+    return;
+  }
+  
+  const rows = [];
+  for(const inv of invites) {
+    // Get reading info
+    const {data:reading} = await SB.from('shared_readings').select('*').eq('id',inv.reading_id).single();
+    // Get sender info
+    const {data:sender} = await SB.from('profiles').select('display_name,username').eq('id',inv.from_user).single();
+    if(!reading || !sender) continue;
+    
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--p);border:1.5px solid var(--b);border-radius:9px;padding:13px 14px;margin-bottom:9px';
+    div.innerHTML = '<div style="font-family:serif;font-size:14px;color:var(--ink);margin-bottom:3px">📚 '+reading.book_title+'</div>'
+      +'<div style="font-size:12px;font-style:italic;color:var(--ink3);margin-bottom:4px">Invito da <strong>'+sender.display_name+'</strong></div>'
+      +(inv.message?'<div style="font-size:12px;font-style:italic;color:var(--ink2);margin-bottom:8px;border-left:3px solid var(--sage);padding-left:8px">'+inv.message+'</div>':'')
+      +'<div style="display:flex;gap:7px">'
+      +'<button class="btn bs bsm" id="acc-'+inv.id+'">✓ Accetta</button>'
+      +'<button class="btn bg bsm" id="rej-'+inv.id+'">✕ Rifiuta</button>'
+      +'</div>';
+    
+    inviteEl.appendChild(div);
+    
+    // Add event listeners
+    document.getElementById('acc-'+inv.id).addEventListener('click', function() {
+      acceptReadingInvite(inv.id, inv.reading_id);
+    });
+    document.getElementById('rej-'+inv.id).addEventListener('click', function() {
+      rejectReadingInvite(inv.id);
+    });
+  }
+}
+
+async function acceptReadingInvite(inviteId, readingId) {
+  await SB.from('shared_reading_members').upsert({reading_id:readingId, user_id:USER.id, page_cur:0});
+  await SB.from('reading_invites').eq('id',inviteId).update({status:'accepted'});
+  toast('Hai accettato la lettura condivisa! 📚','ok');
+  loadFriends();
+}
+
+async function rejectReadingInvite(inviteId) {
+  await SB.from('reading_invites').eq('id',inviteId).update({status:'rejected'});
+  toast('Invito rifiutato.','ok');
+  loadFriends();
 }
 </script>
 
