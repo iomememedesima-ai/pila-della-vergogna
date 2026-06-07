@@ -397,6 +397,7 @@ body{background:var(--p);font-family:'Crimson Pro',Georgia,serif;color:var(--ink
       </div>
       <div class="sh">La pila <span class="sh-s" id="cnt">—</span></div>
       <div class="bfilt">
+        <button class="btn bg bsm" onclick="resetFilters()" style="font-size:11px">✕ Azzera</button>
         <select class="fsel" id="fs" onchange="renderList()"><option value="all">Tutti gli stati</option><option value="unread">Non letti</option><option value="reading">In lettura</option><option value="done">Completati</option></select>
         <select class="fsel" id="ft" onchange="renderList()"><option value="all">Tutti i tipi</option><option value="libro">Libri</option><option value="manga">Manga</option><option value="fumetto">Fumetti</option></select>
         <select class="fsel" id="fg2" onchange="renderList()"><option value="all">Tutti i generi</option></select>
@@ -1337,7 +1338,8 @@ async function loadFriends(){
   if(!USER)return;
   const {data:fships}=await SB.from('friendships').select('*').eq('status','accepted');
   const myFships=(fships||[]).filter(f=>f.user_id===USER.id||f.friend_id===USER.id);
-  const friendIds=myFships.map(f=>f.user_id===USER.id?f.friend_id:f.user_id);
+  const friendIdSet=new Set(myFships.map(f=>f.user_id===USER.id?f.friend_id:f.user_id));
+  const friendIds=[...friendIdSet];
   let friends=[];
   for(const fid of friendIds){
     const {data:p}=await SB.from('profiles').select('id,username,display_name,xp').eq('id',fid).single();
@@ -1360,7 +1362,7 @@ async function loadFriends(){
       const col=colors[Math.abs(hs(f.id))%colors.length];
       var fName=f.display_name.replace(/'/g,"&#39;");
       var fId=f.id;
-      rows.push('<div class="fc"><div class="fca" style="background:'+col+'">'+init+'</div><div class="fci"><div class="fcn">'+f.display_name+'</div><div class="fch">@'+f.username+'</div><div class="fcs"><div class="fcst"><strong>'+((fBooks||[]).length)+'</strong> libri</div><div class="fcst"><strong>'+fDone+'</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>'+fUnread+'</strong> pila</div></div>'+(common.length?'<div style="margin-top:5px;font-size:11px;color:var(--sage)">'+common.length+' libri in comune</div>':'')+'</div><div class="fca2"><button class="btn br bsm" onclick="proponi(&#39;'+fName+'&#39;,&#39;'+fId+'&#39;)">📖 Proponi</button></div></div>');
+      rows.push('<div class="fc"><div class="fca" style="background:'+col+'">'+init+'</div><div class="fci"><div class="fcn">'+f.display_name+'</div><div class="fch">@'+f.username+'</div><div class="fcs"><div class="fcst"><strong>'+((fBooks||[]).length)+'</strong> libri</div><div class="fcst"><strong>'+fDone+'</strong> letti</div><div class="fcst" style="color:var(--red)"><strong>'+fUnread+'</strong> pila</div></div>'+(common.length?'<div style="margin-top:5px;font-size:11px;color:var(--sage)">'+common.length+' libri in comune</div>':'')+'</div><div class="fca2"><button class="btn br bsm" onclick="proponi(&#39;'+fName+'&#39;,&#39;'+fId+'&#39;)">📖 Proponi</button><button class="btn bg bsm" onclick="removeFriendById(&#39;'+fId+'&#39;,&#39;'+fName+'&#39;)" style="border-color:rgba(181,34,15,.4);color:var(--red);font-size:10px">✕</button></div></div>');
     }
     fl.innerHTML=rows.join('');
   }
@@ -1403,9 +1405,10 @@ async function loadFriends(){
 }
 
 async function loadSharedReadings(friendIds) {
-  const {data:readings} = await SB.from('shared_readings').select('*');
+  // Load readings created by user or friends
   const allIds = [USER.id, ...(friendIds||[])];
-  const myReadings = (readings||[]).filter(r=>allIds.includes(r.created_by));
+  const {data:readings} = await SB.from('shared_readings').select('*').in('created_by', allIds);
+  const myReadings = readings||[];
   
   const el = document.getElementById('shared-readings-list');
   if(!myReadings.length) {
@@ -1521,24 +1524,30 @@ async function proponi(name, friendId) {
 
 async function startSharedReading(title, memberIds, overlay) {
   if(overlay) overlay.remove();
-  // Check if already exists
-  const {data:existing} = await SB.from('shared_readings').select('id').eq('book_title',title);
-  let readingId;
-  if(existing && existing.length) {
-    readingId = existing[0].id;
-  } else {
-    const {data:newR} = await SB.from('shared_readings').insert({book_title:title, book_author:'', created_by:USER.id});
-    if(!newR) { toast('Errore creazione lettura condivisa.','wn'); return; }
-    readingId = Array.isArray(newR)?newR[0].id:newR.id;
+  // memberIds might be a string if called from HTML
+  const ids = Array.isArray(memberIds) ? memberIds : [USER.id];
+  try {
+    // Insert new shared reading
+    const {data:newR, error:e1} = await SB.from('shared_readings').insert({
+      book_title: title,
+      book_author: '',
+      created_by: USER.id
+    });
+    if(e1) { toast('Errore: '+e1.message,'wn'); return; }
+    const readingId = Array.isArray(newR)?newR[0]?.id:newR?.id;
+    if(!readingId) { toast('Errore: ID lettura non trovato.','wn'); return; }
+    // Add members
+    for(const uid of ids) {
+      await SB.from('shared_reading_members').upsert({reading_id:readingId, user_id:uid, page_cur:0});
+    }
+    toast('📚 Lettura condivisa avviata: "'+title+'"!', 'ok');
+    await logActivity('started_reading',{title});
+    go('amici');
+    loadFriends();
+  } catch(e) {
+    toast('Errore: '+e.message,'wn');
+    console.error('startSharedReading error:', e);
   }
-  // Add members
-  for(const uid of memberIds) {
-    await SB.from('shared_reading_members').upsert({reading_id:readingId, user_id:uid, page_cur:0});
-  }
-  toast('📚 Lettura condivisa avviata: "'+title+'"!', 'ok');
-  await logActivity('started_reading',{title});
-  go('amici');
-  loadFriends();
 }
 
 async function openDisc(key){
@@ -2061,6 +2070,60 @@ function showLevelLegend() {
   
   document.getElementById('legend-content').innerHTML = content;
   document.getElementById('legend-ov').style.display = 'flex';
+}
+
+async function removeFriend(friendId, name) {
+  if(!confirm('Rimuovere '+name+' dalle amiche?')) return;
+  if(!confirm('Sei sicura? Questa azione è irreversibile.')) return;
+  const {data:fs} = await SB.from('friendships').select('id').eq('status','accepted');
+  const toDelete = (fs||[]).filter(f=>(f.user_id===USER.id&&f.friend_id===friendId)||(f.friend_id===USER.id&&f.user_id===friendId));
+  for(const f of toDelete) {
+    await SB.from('friendships').eq('id',f.id).delete();
+  }
+  toast(name+' rimossa dalle amiche.','ok');
+  loadFriends();
+}
+
+function resetFilters() {
+  document.getElementById('fs').value = 'all';
+  document.getElementById('ft').value = 'all';
+  document.getElementById('fg2').value = 'all';
+  document.getElementById('fsort').value = 'date';
+  document.getElementById('fq').value = '';
+  renderList();
+}
+
+async function removeFriendById(friendId, name) {
+  if(!confirm('Rimuovere '+name+' dalle amiche?')) return;
+  if(!confirm('Sei sicura? Azione irreversibile.')) return;
+  const {data:fs} = await SB.from('friendships').select('id');
+  const toDelete = (fs||[]).filter(f=>(f.user_id===USER.id&&f.friend_id===friendId)||(f.friend_id===USER.id&&f.user_id===friendId));
+  for(const f of toDelete) {
+    await SB.from('friendships').eq('id',f.id).delete();
+  }
+  toast(name+' rimossa.','ok');
+  loadFriends();
+}
+
+async function checkMissions(){
+  if(!USER)return;
+  const doneDefs=BOOKS.filter(b=>b.status==='done');
+  for(const def of MISSIONS_DEF){
+    let pr=0,done=false;
+    if(def.key==='first_book'){pr=doneDefs.length;done=pr>=1;}
+    if(def.key==='complete_5'){pr=doneDefs.length;done=pr>=5;}
+    if(def.key==='complete_10'){pr=doneDefs.length;done=pr>=10;}
+    if(def.key==='zero_pile'){pr=BOOKS.filter(b=>b.status==='unread'||b.status==='reading').length===0?1:0;done=pr>=1;}
+    if(def.key==='read_manga'){pr=doneDefs.filter(b=>b.tipo==='manga'||b.tipo==='fumetto').length;done=pr>=1;}
+    if(done){
+      const {data:existing}=await SB.from('missions').select('id,completed').eq('user_id',USER.id).eq('mission_key',def.key).single();
+      if(!existing?.completed){
+        await SB.from('missions').upsert({user_id:USER.id,mission_key:def.key,progress:pr,target:def.tg,completed:true,completed_at:new Date().toISOString()});
+        await updateXP(def.xp);
+        toast('🏆 Missione: '+def.ti+' +'+def.xp+' XP!','ok');
+      }
+    }
+  }
 }
 </script>
 
